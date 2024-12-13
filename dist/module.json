@@ -1,0 +1,56 @@
+{
+    "id": "crlgn-rolls",
+    "title": "Carolingian Rolls",
+    "version": "0.1.0",
+    "description": "Streamlines roll functionality, with support for DDB Gamelog and retroactive changes to rolls",
+    "compatibility": {
+      "minimum": "12.331",
+      "verified": "12.331"
+    },
+    "authors": [
+      {
+        "name": "carolingian",
+        "email": "carolx@outlook.com",
+        "flags": {}
+      }
+    ],
+    "relationships": {
+      "requires": [
+        {
+          "id": "socketlib",
+          "type": "module",
+          "compatibility": {}
+        }
+      ],
+      "systems": [
+        {
+          "id": "dnd5e",
+          "type": "system",
+          "compatibility": {
+            "minimum": "4.0.3",
+            "verified": "4.0.4"
+          }
+        }
+      ],
+      "recommends": [
+        {
+          "id": "ddb-game-log",
+          "type": "module",
+          "compatibility": {
+            "minimum": "2.3.0",
+            "verified": "2.3.2-beta"
+          }
+        },
+        {
+          "id": "ddb-importer",
+          "type": "module",
+          "compatibility": {}
+        }
+      ]
+    },
+    "socket": true,
+    "esmodules": ["scripts/module.js"],
+    "styles": [
+      "styles/module.css"
+    ]
+}
