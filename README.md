@@ -1,5 +1,5 @@
-**Latest Version:** v1.0.0 
-**Tested on Foundry Version:** 12.331
+**Latest Version:** v1.0.0 / 
+**Tested on:** Foundry v12.331 & DnD5e 4.0.4
 
 ## Carolingian DDB Bridge
 This module is a bridge to add features and compatibility to [DDB Gamelog](https://github.com/IamWarHead/ddb-game-log/) byt Warhead. While **Carolingian DDB Bridge module** is free to use, DDB Gamelog has a Free tier and a Pro tier with different features, and this module will only work for Pro tier users. **Warhead** is not responsible for maintaining this module, please don't bother him with requests.
