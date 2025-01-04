@@ -1,7 +1,9 @@
 export const DDBGL_CLS = {
-  toHit: { label: "to hit", activityType: "attack", rollType: "attack" },
-  damage: { label: "damage", activityType: "attack", rollType: "damage" },
-  heal: { label: "heal", activityType: "heal", rollType: "heal" },
-  save: { label: "save", activityType: "", rollType: "ability" },
-  check: { label: "check", activityType: "", rollType: "skill" }
+  toHit: { prop: "toHit", cls: "to hit", actionType: "attack", rollType: "attack" },
+  damage: { prop: "damage", cls: "damage", actionType: "damage", rollType: "damage" },
+  heal: { prop: "heal", cls: "heal", actionType: "heal", rollType: "heal" },
+  save: { prop: "save", cls: "save", actionType: "save", rollType: "ability" },
+  check: { prop: "check", cls: "check", actionType: "check", rollType: "ability" },
+  custom: { prop: "custom", cls: "roll", actionType: "roll", rollType: "custom" },
+  cast: { prop: "cast", cls: "cast", actionType: "cast", rollType: "cast" }
 }

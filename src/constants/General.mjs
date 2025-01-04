@@ -1,8 +1,8 @@
-export const MODULE_ID = "carolingian-rolls";
-export const MODULE_TITLE = "Carolingian Rolls";
-export const MODULE_SHORT = "crlgn-rolls";
+export const MODULE_ID = "crlngn-ddb-bridge";
+export const MODULE_TITLE = "Carolingian DDB Bridge";
+export const MODULE_SHORT = "crlngn-ddb-bridge";
 export const DEBUG_TAG = [
-  `%cCrlgn Rolls`,
+  `%cCarolingian DDB Bridge`,
   `color: #003377; font-weight: bold;`,
   `|`,
 ];
@@ -26,4 +26,13 @@ export const ROLL_TYPES = {
   toolCheck: "tool"
 }
 
-export const CLASS_PREFIX = 'crlgn';
+export const CHAR_ABILITIES = [
+  { abbrev: "str", name: "strength" },
+  { abbrev: "dex", name: "dexterity" },
+  { abbrev: "con", name: "constitution" },
+  { abbrev: "int", name: "intelligence" },
+  { abbrev: "wis", name: "wisdom" },
+  { abbrev: "cha", name: "charisma" }
+]
+
+export const CLASS_PREFIX = 'crlngn';

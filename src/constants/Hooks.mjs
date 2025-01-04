@@ -8,7 +8,10 @@ export const HOOKS_CORE = {
   INIT: "init", 
   READY: "ready", 
   PRE_CREATE_CHAT_MESSAGE: "preCreateChatMessage", 
-  RENDER_CHAT_MESSAGE: "renderChatMessage" 
+  CREATE_CHAT_MESSAGE: "createChatMessage", 
+  RENDER_CHAT_MESSAGE: "renderChatMessage" ,
+  CREATE_MEASURED_TEMPLATE: "createMeasuredTemplate",
+  REFRESH_MEASURED_TEMPLATE: "refreshMeasuredTemplate"
 }
 
 /**
@@ -17,8 +20,10 @@ export const HOOKS_CORE = {
  */
 export const HOOKS_DND5E ={
     // Rolls
+    PRE_ROLL_V2: "dnd5e.preRollV2",
     PRE_ROLL_ABILITY_TEST: "dnd5e.preRollAbilityTest",
     PRE_ROLL_ABILITY_SAVE: "dnd5e.preRollAbilitySave",
+    PRE_ROLL_SAVING_THROW: "dnd5e.preRollSavingThrow",
     PRE_ROLL_ATTACK_V2: "dnd5e.preRollAttackV2",
     PRE_ROLL_CLASS_HIT_POINTS: "dnd5e.preRollClassHitPoints",
     PRE_ROLL_CONCENTRATION: "dnd5e.preRollConcentration",

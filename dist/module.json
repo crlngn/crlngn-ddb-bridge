@@ -1,8 +1,8 @@
 {
-    "id": "crlgn-rolls",
-    "title": "Carolingian Rolls",
-    "version": "0.1.0",
-    "description": "Streamlines roll functionality, with support for DDB Gamelog and retroactive changes to rolls",
+    "id": "crlngn-ddb-bridge",
+    "title": "Carolingian DDB Bridge",
+    "version": "1.0.0",
+    "description": "Adds DDB Gamelog support for DnD 4.x and streamlines roll functionality",
     "compatibility": {
       "minimum": "12.331",
       "verified": "12.331"
@@ -10,17 +10,11 @@
     "authors": [
       {
         "name": "carolingian",
-        "email": "carolx@outlook.com",
         "flags": {}
       }
     ],
     "relationships": {
       "requires": [
-        {
-          "id": "socketlib",
-          "type": "module",
-          "compatibility": {}
-        }
       ],
       "systems": [
         {
@@ -30,9 +24,7 @@
             "minimum": "4.0.3",
             "verified": "4.0.4"
           }
-        }
-      ],
-      "recommends": [
+        },
         {
           "id": "ddb-game-log",
           "type": "module",
@@ -40,7 +32,9 @@
             "minimum": "2.3.0",
             "verified": "2.3.2-beta"
           }
-        },
+        }
+      ],
+      "recommends": [
         {
           "id": "ddb-importer",
           "type": "module",

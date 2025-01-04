@@ -1,5 +1,5 @@
 {
-  "name": "crlgn-rolls",
+  "name": "crlngn-ddb-bridge",
   "version": "0.1.0",
   "description": "A companion module for improving rolls on FoundryVTT and DnD5e",
   "license": "MIT",

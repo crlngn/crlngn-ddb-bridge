@@ -1,2 +1,6 @@
 node_modules/
 deps/
+dnd5e/
+foundry/
+crlngn-ddb-bridge.code-workspace
+foundry-config.yaml

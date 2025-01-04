@@ -1,298 +1,237 @@
 import { DDBGL_CLS } from "../constants/DDBGL.mjs";
-import { ACTIVITY_TYPES, MODULE_SHORT, ROLL_TYPES } from "../constants/General.mjs";
 import { GeneralUtil } from "./GeneralUtil.mjs";
 import { LogUtil } from "./LogUtil.mjs";
-import { RollUtil } from "./RollUtil.mjs";
 
 export class ActivityUtil {
 
-  static init(){
-
-  }
   /**
-   * 
-   **/
-  static forwardAction = async (ddbglCls, activities, msg, msgConfig) => {
-    let activityArray = [];
-    let selectedActivity = null;
-    LogUtil.log("forwardAction", [{...msg}, msgConfig]); 
-    let originalRoll, dialogConfig, rollConfig, activityRolls, rollData;
-
-
-    // find the appropriate activity according to the roll description from DDB Gamelog
-    switch(ddbglCls){ 
-      case DDBGL_CLS.toHit.label: // is attack
-        selectedActivity = activities.find( act => act.type === DDBGL_CLS.toHit.activityType );
-
-        originalRoll = msg.rolls[0];
-
-        dialogConfig = {
-          configure:false
-        };
-
-        rollConfig = {
-          rolls: [originalRoll],
-          formula: originalRoll.formula,
-          flags: {
-            ...msg.flags,
-            [MODULE_SHORT]: {
-              originalRoll: [originalRoll],
-              temporary: true
-            },
-            dnd5e: {
-              ...msg.flags.dnd5e,
-              messageType: "roll",
-              roll: { type: "attack" },
-              targets: GeneralUtil.getTargetDescriptors()
-            }
-          }
-        }
-        activityRolls = await selectedActivity.rollAttack(rollConfig, dialogConfig, { create: false });
-        
-        // delete msg.flags['ddb-game-log'];
-
-        activityRolls[0].terms = originalRoll.terms;
-        /*activityRolls[0].terms.map((t,i)=>{
-          let term = t;
-          term.evaluated = true;
-          if(term instanceof Die){
-            term = originalRoll.terms[i];
-            term._formula = originalRoll.terms[i].formula;
-            term.results = originalRoll.terms[i].results;
-            term._evaluateSync({strict: false});
-            // term.resetFormula();
-          }
-          return term;
-        });*/
-        
-        activityRolls[0]._total = activityRolls[0]._evaluateTotal();
-        activityRolls[0].resetFormula();
-
-        rollData = {
-          rolls: activityRolls,
-          formula: activityRolls[0].formula,
-          flavor: msg.flavor,
-          speaker: msg.speaker,
-          whisper: msg.whisper,
-          user: game.user,
-          blind: msg.blind,
-          flags: {
-            ...msg.flags,
-            [MODULE_SHORT]: {
-              originalRoll: [originalRoll]
-            },
-            dnd5e: {
-              ...msg.flags.dnd5e,
-              messageType: "roll",
-              roll: { type: "attack" },
-              targets: GeneralUtil.getTargetDescriptors()
-            }
-          }
-        }
-
-        await activityRolls[0].toMessage(rollData);
-        break; 
-      case DDBGL_CLS.damage.label: // is damage roll
-        selectedActivity = activities.find( act => act.type === DDBGL_CLS.toHit.activityType );
-        LogUtil.log("forwardAction - " + DDBGL_CLS.damage.label, [msg.rolls]);
-
-        originalRoll = msg.rolls[0];
-
-        dialogConfig = {
-          configure:false
-        };
-
-        rollConfig = {
-          // class: 'DamageRoll',
-          rolls: [originalRoll],
-          flags: {
-            ...msg.flags,
-            [MODULE_SHORT]: {
-              originalRoll: [originalRoll],
-              temporary: true
-            },
-            dnd5e: {
-              ...msg.flags.dnd5e,
-              messageType: "roll",
-              roll: { type: "damage" },
-              targets: GeneralUtil.getTargetDescriptors(),
-              scaling: msg.flags.dnd5e?.scaling ?? 0
-            }
-          },
-          isCritical: msg.flags['ddb-game-log']?.isCritical ?? false,
-          scaling: msg.flags.dnd5e?.scaling ?? 0
-        }
-
-        dialogConfig = { 
-            configure: false 
-        }
-
-        LogUtil.log("DamageRoll", [game.dnd5e.dice.DamageRoll]);
-        activityRolls = await selectedActivity.rollDamage({
-          isCritical:rollConfig.isCritical, scaling: rollConfig.scaling
-        }, dialogConfig, { 
-          create: false, data: { flags: rollConfig.flags } 
-        });
-        
-
-        // delete msg.flags['ddb-game-log'];
-        activityRolls[0].terms = originalRoll.terms;
-        /*
-        activityRolls[0].terms.map((t,i)=>{
-          let term = t;
-          if(term instanceof Die){
-            term._formula = originalRoll.terms[i].formula;
-            term.results = originalRoll.terms[i].results;
-            term._evaluateSync({strict: false});
-            // term.resetFormula();
-            LogUtil.log('TERM', [DiceTerm, term])
-          }
-          term.evaluated = true;
-          return term;
-        });
-        */
-        
-        activityRolls[0]._total = activityRolls[0]._evaluateTotal();
-        activityRolls[0].resetFormula();
-
-        rollData = {
-          rolls: activityRolls,
-          formula: activityRolls[0].formula,
-          flavor: msg.flavor,
-          speaker: msg.speaker,
-          whisper: msg.whisper,
-          user: game.user,
-          blind: msg.blind,
-          flags: {
-            ...msg.flags,
-            [MODULE_SHORT]: {
-              originalRoll: [originalRoll]
-            },
-            dnd5e: {
-              ...msg.flags.dnd5e,
-              messageType: "roll",
-              roll: { type: "damage" },
-              targets: GeneralUtil.getTargetDescriptors()
-            }
-          }
-        }
-
-        await activityRolls[0].toMessage(rollData);
-        LogUtil.log("forwardAction - " + DDBGL_CLS.damage, [rollData]);
-        break;
-      default: 
-        // 
-    } 
-
-    // if no matching activity was found, use the first one on the list 
-    if(!selectedActivity){ 
-      activityArray = Array.from(activities); 
-      return activityArray[0] || null; 
-    } 
-
-    return selectedActivity; 
-  } 
-
-  /**
-   * 
-   * @param {Activity} rollActivity 
-   * @param {*} config {usage?, dialog?, msg?}
+   * If the item has an associated activity, return it,
+   * according to the type of roll passed from DDB Gamelog
+   * @param {*} item 
+   * @param {*} ddbglCls 
+   * @returns 
    */
-  static async fastForwardActivity(rollActivity, config){
-    config = {
-      ...config,
-      dialog: {
-        ...config.dialog,
-        configure: false
-      },
-      msg: {
-        ...config.msg, 
-        create: true
-      }
+  static getActivityFromItem(item, ddbglCls){ 
+    let selectedActivity = null;
+    if(!item){ return selectedActivity };
+
+    const activities = item.system?.activities;
+    const hasAttack = item.hasAttack;
+    const hasSave = item.hasSave;
+    const hasDamage = item.hasDamage;
+
+    const activityByType = (type) => {
+      const activity = activities.find(act => {
+        LogUtil.log("activityByType",[act.type, type, act.type==type]);
+        return act.type===type
+      });
+      LogUtil.log("activityByType", [item, activities, activity]);
+      return activity;
     }
 
-    LogUtil.log("RollUtil.fastForwardActivity", [rollActivity.type, config]);
-
-    switch(rollActivity.type){
-      case ACTIVITY_TYPES.attack:
-        const rolls = await rollActivity.rollAttack(config.usage||{}, config.dialog||{}, config.msg||{});
-        LogUtil.log("ActivityUtil.fastForwardActivity - rolls", [rolls]); 
+    switch(ddbglCls){ 
+      case DDBGL_CLS.toHit.cls: // attack roll
+        selectedActivity = activityByType(DDBGL_CLS.toHit.actionType);
+        break;
+      case DDBGL_CLS.damage.cls: // damage roll
+        if(hasAttack && hasDamage){ // damage from attack roll
+          selectedActivity = activityByType(DDBGL_CLS.toHit.actionType);
+        }else if(hasSave && hasDamage){ // damage from saving throw
+          selectedActivity = activityByType(DDBGL_CLS.save.actionType);
+        }else if(hasDamage){
+          selectedActivity = activityByType(DDBGL_CLS.damage.actionType);
+        }
+        break;
+      case DDBGL_CLS.check.cls:
+        selectedActivity = activityByType(DDBGL_CLS.check.actionType);
+        break;
+      case DDBGL_CLS.save.cls:
+        selectedActivity = activityByType(DDBGL_CLS.save.actionType);
+        break;
+      case DDBGL_CLS.heal.cls:
+        selectedActivity = activityByType(DDBGL_CLS.heal.actionType);
+        break;
+      case DDBGL_CLS.cast.cls:
+        selectedActivity = activityByType(DDBGL_CLS.cast.actionType);
         break;
       default:
         //
-        LogUtil.log("ActivityUtil.fastForwardActivity - Activity not configured", []); 
     }
+
+    return selectedActivity ?? Array.from(activities.keys())[0] ?? null;
   }
 
-  /*
-  static setRenderFlags = (activity:Activity, message:GenericObject) => {
-    if (!message.data.flags || !message.data.flags[MODULE_SHORT]) {
-        return;
+  /**
+   * Activate this activity. 
+   * Like use() from ActivityMixin in dnd5e, but it does not roll attack / damage again
+   * @param {Activity} activity
+   * @param {ActivityUseConfiguration} usage        Configuration info for the activation.
+   * @param {ActivityDialogConfiguration} dialog    Configuration info for the usage dialog.
+   * @param {ActivityMessageConfiguration} message  Configuration info for the created chat message.
+   * @returns {Promise<ActivityUsageResults|void>}  Details on the usage process if not canceled.
+   */
+  static async ddbglUse(activity, usage={}, dialog={}, message={}, triggerFinalActions=false) {
+    if(!activity){
+      ui.notifications.error("No activity found", { localize: false });
+      return;
+    }
+    if ( !activity.item.isEmbedded || activity.item.pack ) return;
+    if ( !activity.item.isOwner ) {
+      ui.notifications.error("DND5E.DocumentUseWarn", { localize: true });
+      return;
+    }
+    if ( !activity.canUse ) {
+      ui.notifications.error("DND5E.ACTIVITY.Warning.UsageNotAllowed", { localize: true });
+      return;
+    }
+
+    // Create an item clone to work with throughout the rest of the process
+    let item = activity.item.clone({}, { keepId: true });
+    //activity = item.system.activities.get(activity.id);
+
+    const usageConfig = activity._prepareUsageConfig(usage);
+    
+    if(usageConfig.create?.measuredTemplate){
+      ui.notifications?.info("Click the map to place the template and see the roll. Right click to cancel", { localize: false });
+    }
+
+    const dialogConfig = foundry.utils.mergeObject({
+      configure: true,
+      applicationClass: activity.metadata.usage.dialog
+    }, dialog);
+
+    const messageConfig = foundry.utils.mergeObject({
+      create: true,
+      data: {
+        flags: {
+          dnd5e: {
+            ...activity.messageFlags,
+            messageType: "usage",
+            use: {
+              effects: activity.applicableEffects?.map(e => e.id)
+            }
+          },
+          rsr5e: { processed: true, quickRoll: false }
+        }
+      },
+      hasConsumption: usageConfig.hasConsumption
+    }, message);
+
+    /**
+     * 
+     * @function dnd5e.preUseActivity
+     * @memberof hookEvents
+     * @param {Activity} activity                           Activity being used.
+     * @param {ActivityUseConfiguration} usageConfig        Configuration info for the activation.
+     * @param {ActivityDialogConfiguration} dialogConfig    Configuration info for the usage dialog.
+     * @param {ActivityMessageConfiguration} messageConfig  Configuration info for the created chat message.
+     * @returns {boolean}  Explicitly return `false` to prevent activity from being used.
+     */
+    if ( Hooks.call("dnd5e.preUseActivity", activity, usageConfig, dialogConfig, messageConfig) === false ) return;
+
+    // Handle scaling
+    await activity._prepareUsageScaling(usageConfig, messageConfig, item);
+    activity = item.system.activities.get(activity.id);
+
+    // Handle consumption
+    const updates = await activity.consume(usageConfig, messageConfig);
+    if ( updates === false ) return;
+    const results = { effects: [], templates: [], updates };
+
+    // Create concentration effect & end previous effects
+    if ( usageConfig.concentration?.begin ) {
+      const effect = await item.actor.beginConcentrating(activity, { "flags.dnd5e.scaling": usageConfig.scaling });
+
+      if ( effect ) {
+        results.effects ??= [];
+        results.effects.push(effect);
+        foundry.utils.setProperty(messageConfig.data, "flags.dnd5e.use.concentrationId", effect.id);
+      }
+      if ( usageConfig.concentration?.end ) {
+        const deleted = await item.actor.endConcentration(usageConfig.concentration.end);
+        results.effects.push(...deleted);
+      }
+    }
+
+    // Create chat message
+    messageConfig.data.rolls = (messageConfig.data.rolls ?? []).concat(updates.rolls);
+    results.message = await ActivityUtil.createUsageMessage(activity, messageConfig);
+    results.message.dnd5e = messageConfig.flags?.dnd5e ?? {};
+    results.message.dnd5e.targets = GeneralUtil.getTargetDescriptors();
+    results.message.flags = {
+      ...results.message.flags, 
+      rsr5e: { processed: true }
+    }
+
+    // Perform any final usage steps
+    await activity._finalizeUsage(usageConfig, results); 
+
+    if ( Hooks.call("dnd5e.postUseActivity", activity, usageConfig, results) === false ) return results;
+
+    // Trigger any primary action provided by this activity
+    if(triggerFinalActions){
+      activity._triggerSubsequentActions(usageConfig, results);
+    }
+
+    return results; 
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Display a chat message for this usage.
+   * @param {Activity} activity
+   * @param {ActivityMessageConfiguration} message  Configuration for the message
+   * @returns {Promise<ChatMessage5e|object>}
+   * @protected
+   */
+  static async createUsageMessage(activity, message) {
+    let context = await activity._usageChatContext(message);
+    // context.rollMsg = message.data.rollMsg;
+    let rollData = await _buildRollData(message.data.rolls, activity);
+    context = {
+      ...context,
+      rolls: rollData
     }
     
-    if (!message.data.flags[MODULE_SHORT].quickRoll) {
-        return;
-    }        
+    LogUtil.log("createUsageMessage", [context, rollData]); 
 
-    const hasAttack = activity.hasOwnProperty(ROLL_TYPES.attack);
-    const hasDamage = activity.hasOwnProperty(ROLL_TYPES.damage);
-    const hasHealing = activity.hasOwnProperty(ROLL_TYPES.healing);
-    const hasFormula = activity.hasOwnProperty(ROLL_TYPES.formula);
-
-    if (hasAttack) {            
-      message.data.flags[MODULE_SHORT].renderAttack = true;
-    }
-
-    if (hasDamage && activity[ROLL_TYPES.damage]?.parts?.length > 0) {
-        message.data.flags[MODULE_SHORT].renderDamage = !message.data.flags[MODULE_SHORT].manualDamage;
-    }
-
-    if (hasHealing) {
-        message.data.flags[MODULE_SHORT].isHealing = true;
-        message.data.flags[MODULE_SHORT].renderDamage = true; 
-    }
-
-    if (hasFormula && activity[ROLL_TYPES.formula]?.formula !== '') {
-        message.data.flags[MODULE_SHORT].renderFormula = true;
-
-        if (activity.roll?.name && activity.roll.name !== "") {
-            message.data.flags[MODULE_SHORT].formulaName = activity.roll?.name;
+    const messageConfig = foundry.utils.mergeObject({
+      rollMode: game.settings.get("core", "rollMode"),
+      data: {
+        content: await renderTemplate(activity.metadata.usage.chatCard, context),
+        speaker: ChatMessage.getSpeaker({ actor: activity.item.actor }),
+        flags: {
+          core: { canPopout: true },
+          rsr5e: { processed: true }
         }
-    }
+      }
+    }, message);
+
+    Hooks.callAll("dnd5e.preCreateUsageMessage", activity, messageConfig);
+
+    ChatMessage.applyRollMode(messageConfig.data, messageConfig.rollMode);
+    const card = messageConfig.create === false ? messageConfig.data : await ChatMessage.create(messageConfig.data);
+
+    Hooks.callAll("dnd5e.postCreateUsageMessage", activity, card);
+
+    return card;
   }
-  */
-
-
 }
 
+const _buildRollData = async(rolls, activity) => {
+  let rollData = [];
 
-/**
- * 
- **/
-const forwardAction = (ddbglCls, activities, config) => {
-  let activityArray = [];
-  let selectedActivity = null;
-  
-  // find the appropriate activity according to the roll description from DDB Gamelog
-  switch(ddbglCls){ 
-    case DDBGL_CLS.toHit.label: // is attack
-      selectedActivity = activities.find( act => act.type === DDBGL_CLS.toHit.activityType );
-      ActivityUtil.fastForwardActivity(selectedActivity, {  });
-      LogUtil.log("getActivityFromAction");
-      break; 
-    case DDBGL_CLS.damage.label: // is attack damage
-      selectedActivity = activities.find( act => act.type === DDBGL_CLS.toHit.activityType );
-      ActivityUtil.fastForwardActivity(selectedActivity, { });
-      LogUtil.log("getActivityFromAction");
-    default: 
-      // 
-  } 
+  rollData = await Promise.all(rolls.map(async(r)=>{
+    const tooltipHtml = await r.getTooltip();
+    return {
+      ...r,
+      formula: r.formula,
+      total: r.total,
+      tooltipHtml: tooltipHtml
+    }
+  }));
+  LogUtil.log("_buildRollData / rollData",[rollData]);
 
-  // if no matching activity was found, use the first one on the list 
-  if(!selectedActivity){ 
-    activityArray = Array.from(activities); 
-    return activityArray[0] || null; 
-  } 
-
-  return selectedActivity; 
-} 
+  return rollData
+}

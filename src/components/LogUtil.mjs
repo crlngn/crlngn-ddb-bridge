@@ -26,8 +26,8 @@ export class LogUtil {
      */
     static logError(strRef, options){ // = { ui:false, console:true, permanent:false }) {
         if(options.ui){
-            console.log(ui.notifications);
-            // ui.notifications?.error(strRef, { localize: true, permanent: options.permanent });
+            // console.log(ui.notifications);
+            ui.notifications?.error(strRef, { localize: true, permanent: options.permanent });
         }
         if(options.console) console.error(...DEBUG_TAG, strRef);
     }
