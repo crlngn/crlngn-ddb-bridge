@@ -22,10 +22,10 @@ export class ActivityUtil {
 
     const activityByType = (type) => {
       const activity = activities.find(act => {
-        LogUtil.log("activityByType",[act.type, type, act.type==type]);
+        // LogUtil.log("activityByType",[act.type, type, act.type==type]);
         return act.type===type
       });
-      LogUtil.log("activityByType", [item, activities, activity]);
+      // LogUtil.log("activityByType", [item, activities, activity]);
       return activity;
     }
 
@@ -194,7 +194,7 @@ export class ActivityUtil {
       rolls: rollData
     }
     
-    LogUtil.log("createUsageMessage", [context, rollData]); 
+    // LogUtil.log("createUsageMessage", [context, rollData]); 
 
     const messageConfig = foundry.utils.mergeObject({
       rollMode: game.settings.get("core", "rollMode"),
@@ -231,7 +231,7 @@ const _buildRollData = async(rolls, activity) => {
       tooltipHtml: tooltipHtml
     }
   }));
-  LogUtil.log("_buildRollData / rollData",[rollData]);
+  // LogUtil.log("_buildRollData / rollData",[rollData]);
 
   return rollData
 }

@@ -43,7 +43,7 @@ export class GeneralUtil {
  */
   static isModuleOn(moduleName){
     const module = game.modules?.get(moduleName);
-    LogUtil.log("isModuleOn", [module?.active]);
+    // LogUtil.log("isModuleOn", [module?.active]);
     return module?.active ? true : false;
   }
 

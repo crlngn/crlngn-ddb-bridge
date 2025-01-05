@@ -4,6 +4,7 @@ import { HOOKS_CORE, HOOKS_DND5E } from "../constants/Hooks.mjs";
 import { GeneralUtil } from "./GeneralUtil.mjs";
 import { LogUtil } from "./LogUtil.mjs";
 import { RollUtil } from "./RollUtil.mjs";
+import { SettingsUtil } from "./SettingsUtil.mjs";
 
 export class Main {
   static keysPressed = [];
@@ -22,9 +23,10 @@ export class Main {
       Main.registerRollHooks();
       Main.registerChatHooks();
       Main.registerTemplateHooks();
+      SettingsUtil.registerSettings();
 
       Main.isMidiOn = GeneralUtil.isModuleOn("midi-qol");
-      LogUtil.log("Initiating module",[CONFIG, Main.isMidiOn]);
+      LogUtil.log("Initiating module",[CONFIG, Main.isMidiOn], null, true);
     })
   }
 
