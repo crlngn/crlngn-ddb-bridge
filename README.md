@@ -6,6 +6,8 @@ This module is a bridge to add features and compatibility to [DDB Gamelog](https
 While **Carolingian DDB Bridge module** is free to use and distribute, DDB Gamelog has a Free tier and a Pro tier with different features - the DDB feature of my module will only work for Pro tier users of DDB Gamelog. **Warhead** is not responsible for maintaining this module, please don't bother him with requests.
 Some features like the dark mode and template auto-target do not depend on Gamelog Pro tier.
 
+[auto-template-target-saves-b.webm](https://github.com/user-attachments/assets/6e7a39eb-ef04-46e7-9c94-e22365e546b2)
+
 ### IMPORTANT:
 - The module is currently **NOT** compatible with Midi-QOL. It might also not be compatible with other modules which modify rolls or chat messages - please check before using;
 - The module is currently compatible with Ready Set Roll 5e v3.4.2 (which will only work for rolls made from within Foundry)
