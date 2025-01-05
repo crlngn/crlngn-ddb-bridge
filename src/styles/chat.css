@@ -176,6 +176,10 @@ Chat card layout - start
   content: "attack";
 }
 
+.dnd5e2.chat-card .card-buttons > button[data-action=rollHealing] span:before {
+  content: "healing";
+}
+
 .dnd5e2.chat-card .card-buttons > button[data-action=rollDamage] span:before {
   content: "damage";
 }
