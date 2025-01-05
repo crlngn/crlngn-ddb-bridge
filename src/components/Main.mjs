@@ -188,6 +188,8 @@ const onRenderChatMessage = (chatMessage, html) => {
   let senderSubtitle = html.querySelector(".message-sender .subtitle");
   let senderFlavor = html.querySelector(".message-sender .flavor-text");
   let headerFlavor = html.querySelector(".message-header .flavor-text");
+
+  html.classList.remove('ddb-game-log-open-card');
   /** replace author subtitle with flavor text, for space optimization */
   const flavorText = headerFlavor?.innerHTML || "";
   LogUtil.log(HOOKS_DND5E.RENDER_CHAT_MESSAGE,[flavorText, chatMessage, html, html.querySelector(".message-header .flavor-text")]);

@@ -53,20 +53,21 @@ Chat card layout - start
 
 
 /* card headers */
-.message.crlngn.ddbgl .dnd5e2.chat-card .card-header{
+/*.message.crlngn.ddbgl .dnd5e2.chat-card .card-header{
   max-height: 10000px;
-}
+}*/
 .message.crlngn.ddbgl .dnd5e2.chat-card .card-header.collapsed{
   max-height: 0px;
   padding: 0;
 }
 .chat-message.message.ddb-game-log-open-card .ddb-game-log-chat-card {
   overflow: auto;
-  max-height: 10000px;
+  /*max-height: 10000px;*/
 }
 :is(.chat-popout, #chat-log, .chat-log) .message.crlngn .message-header .message-sender {
   gap: 0.5em;
 }
+:is(.chat-popout, #chat-log, .chat-log) .chat-message.message .message-header .message-sender img,
 :is(.chat-popout, #chat-log, .chat-log) .message.crlngn .message-header .message-sender img,
 :is(.chat-popout, #chat-log, .chat-log) .message.crlngn .message-header .message-sender .avatar img {
   border-radius: 4px;
