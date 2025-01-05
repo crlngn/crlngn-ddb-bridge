@@ -3,8 +3,10 @@
 
 ## Carolingian DDB Bridge
 This module is a bridge to add features and compatibility to [DDB Gamelog](https://github.com/IamWarHead/ddb-game-log/) by **Warhead**. 
+DDB Gamelog currently does not support activity native capabilities - Carolingian DDB Bridge allows users to take advantage of core Foundry features like application of effects and quick chat buttons while still using DDB Gamelog to roll from D&D Beyond.
+
 While **Carolingian DDB Bridge module** is free to use and distribute, DDB Gamelog has a Free tier and a Pro tier with different features - the DDB feature of my module will only work for Pro tier users of DDB Gamelog. **Warhead** is not responsible for maintaining this module, please don't bother him with requests.
-Some features like the dark mode and template auto-target do not depend on Gamelog Pro tier.
+Some features like the chat message styling and template auto-target do not depend on Gamelog Pro tier to work.
 
 [auto-template-target-saves-b.webm](https://github.com/user-attachments/assets/6e7a39eb-ef04-46e7-9c94-e22365e546b2)
 
