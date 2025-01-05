@@ -1,4 +1,4 @@
-**Latest Version:** v1.0.1 / 
+**Latest Version:** 1.0.2 / 
 **Compatibility:** Foundry v12.331 & DnD5e 4.1.2
 
 ## Carolingian DDB Bridge
