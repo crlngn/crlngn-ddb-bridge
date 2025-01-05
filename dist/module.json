@@ -5,7 +5,7 @@
     "description": "Adds DDB Gamelog support for DnD 4.x and streamlines roll functionality",
     "url": "https://github.com/crlngn/crlngn-ddb-bridge",
     "manifest": "https://raw.githubusercontent.com/crlngn/crlngn-ddb-bridge/main/dist/module.json",
-    "download": "https://github.com/crlngn/crlngn-ddb-bridge/archive/refs/tags/1.0.2.zip",
+    "download": "https://github.com/crlngn/crlngn-ddb-bridge/archive/refs/tags/v1.0.2.zip",
     "bugs": "https://github.com/crlngn/crlngn-ddb-bridge/issues",
     "readme": "https://github.com/crlngn/crlngn-ddb-bridge/main/README.md",
     "license": "https://mit-license.org/",
