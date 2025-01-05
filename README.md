@@ -1,17 +1,18 @@
-**Latest Version:** v1.0.0 / 
-**Tested on:** Foundry v12.331 & DnD5e 4.1.2
+**Latest Version:** v1.0.1 / 
+**Compatibility:** Foundry v12.331 & DnD5e 4.1.2
 
 ## Carolingian DDB Bridge
 This module is a bridge to add features and compatibility to [DDB Gamelog](https://github.com/IamWarHead/ddb-game-log/) by **Warhead**. 
-While **Carolingian DDB Bridge module** is free to use, DDB Gamelog has a Free tier and a Pro tier with different features - this module will only work for Pro tier users of DDB Gamelog. **Warhead** is not responsible for maintaining this module, please don't bother him with requests.
+While **Carolingian DDB Bridge module** is free to use and distribute, DDB Gamelog has a Free tier and a Pro tier with different features - the DDB feature of my module will only work for Pro tier users of DDB Gamelog. **Warhead** is not responsible for maintaining this module, please don't bother him with requests.
+Some features like the dark mode and template auto-target do not depend on Gamelog Pro tier.
 
 ### IMPORTANT:
-- The module is **NOT** compatible with Midi-QOL;
+- The module is currently **NOT** compatible with Midi-QOL. It might also not be compatible with other modules which modify rolls or chat messages - please check before using;
 - The module is currently compatible with Ready Set Roll 5e v3.4.2 (which will only work for rolls made from within Foundry)
 - This module is not compatible with versions of Foundry before v12 and DnD5e v4.0.x;
 
 ### FEATURES:
-- Support for activities in DnD 4.0.3 - 4.0.4 when rolling with DDB Gamelog module (from D&D Beyond website or app);
+- Support for activities in DnD 4.0.3 - 4.1.2 when rolling with DDB Gamelog module (from D&D Beyond website or app);
 - Support for JB2A / Automated Animations for spells and attacks;
 - Spells rolled from DDB which have templates will auto-trigger its template placement in Foundry;
 - The template auto-targets tokens in the area of placement;
@@ -23,7 +24,7 @@ While **Carolingian DDB Bridge module** is free to use, DDB Gamelog has a Free t
 
 ### BUGS AND FEATURE REQUESTS:
 - Please use the issue tracker to report any bugs and enhancements using the appropriate labels.
-- As of version v1.0.0 there are no configurations available. If you would like to disable a specific feature, please add this to Feature requests on the issue tracker
+- As of this version only debug configuration is available. If you would like to disable a specific feature, please request this as an enhancement on the issue tracker
 
 ### PLANNED FEATURES
 I am currently evaluating the following features:
