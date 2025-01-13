@@ -1,4 +1,5 @@
 **Latest Version:** 1.0.2
+
 **Requirements:** 
 - Foundry v12.331
 - DnD5e 4.0.3 to 4.1.2
