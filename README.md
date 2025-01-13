@@ -1,9 +1,9 @@
 **Latest Version:** 1.0.2
 
 **Requirements:** 
-- Foundry VTT v12.331
-- DnD5e 4.0.3 to 4.1.2
-- DDB Gamelog module by Warhead
+- Foundry VTT version 12.328 to 12.331
+- DnD5e version 4.0.3 to 4.1.2
+- DDB Gamelog module by Warhead, version 2.2.0 to 2.3.2-beta
 
 ## Carolingian DDB Bridge
 This module is a bridge to add features and compatibility to [DDB Gamelog](https://github.com/IamWarHead/ddb-game-log/) by **Warhead**. 
