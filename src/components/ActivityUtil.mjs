@@ -21,11 +21,10 @@ export class ActivityUtil {
     const hasDamage = item.hasDamage;
 
     const activityByType = (type) => {
-      const activity = activities.find(act => {
-        LogUtil.log("activityByType",[act.type, type, act.type==type]);
-        return act.type===type
+      const activity = activities.find(act => { 
+        return act.type===type;
       });
-      LogUtil.log("activityByType", [item, activities, activity]);
+      LogUtil.log("activityByType", [item, type, activities, activity]); 
       return activity;
     }
 

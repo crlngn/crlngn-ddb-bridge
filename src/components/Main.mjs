@@ -22,7 +22,6 @@ export class Main {
       Main.isMidiOn = GeneralUtil.isModuleOn("midi-qol");
       LogUtil.log("Initiating module", [game.modules?.get("ddb-game-log")], true);
       
-
       SettingsUtil.registerSettings();
     })
 
