@@ -23,7 +23,7 @@ export class RollUtil{
       rolls: [],
       flags: {
         ...msg.flags, 
-        [MODULE_SHORT]: { processed: false },
+        [MODULE_SHORT]: { processed: true },
         dnd5e: {
           ...msg.flags.dnd5e,
           // messageType: "roll" 
@@ -36,43 +36,50 @@ export class RollUtil{
     config.message = {
       flavor: msg.flavor,
       speaker: msg.speaker,
-      whisper: msg.whisper,
+      whisper: "",//msg.whisper,
       user: game.user,
       blind: msg.blind || GeneralUtil.isPrivateRoll(msgData.rollMode),
       rollMode: msgData.rollMode
     }
 
-    switch(true){ 
-      case ddbglCls===DDBGL_CLS.toHit.cls: // is attack roll
-        selectedActivity = ActivityUtil.getActivityFromItem(item, ddbglCls) ?? null; 
-        await RollUtil.triggerAttack(selectedActivity, msg, msgData, config);
-        
-        break; 
-      case ddbglCls===DDBGL_CLS.damage.cls :
-        selectedActivity = ActivityUtil.getActivityFromItem(item, ddbglCls) ?? null;
-        await RollUtil.triggerDamage(selectedActivity, msg, msgData, config);
-        
-        break; 
-      case ddbglCls===DDBGL_CLS.save.cls 
-            || ddbglCls===DDBGL_CLS.check.cls:
-        selectedActivity = null;
-        await RollUtil.triggerAbilityTest(ddbglCls, msg, msgData, config);
+    try{
+      switch(true){ 
+        case ddbglCls===DDBGL_CLS.toHit.cls: // is attack roll
+          selectedActivity = ActivityUtil.getActivityFromItem(item, ddbglCls) ?? null; 
+          await RollUtil.triggerAttack(selectedActivity, msg, msgData, config);
+          
+          break; 
+        case ddbglCls===DDBGL_CLS.damage.cls :
+          selectedActivity = ActivityUtil.getActivityFromItem(item, ddbglCls) ?? null;
+          await RollUtil.triggerDamage(selectedActivity, msg, msgData, config);
+          
+          break; 
+        case ddbglCls===DDBGL_CLS.save.cls 
+              || ddbglCls===DDBGL_CLS.check.cls:
+          selectedActivity = null;
+          await RollUtil.triggerAbilityTest(ddbglCls, msg, msgData, config);
 
-        break; 
-      case ddbglCls===DDBGL_CLS.heal.cls:
-        selectedActivity = ActivityUtil.getActivityFromItem(item, ddbglCls) ?? null;
-        await RollUtil.triggerHeal(selectedActivity, msg, msgData, config);
+          break; 
+        case ddbglCls===DDBGL_CLS.heal.cls:
+          selectedActivity = ActivityUtil.getActivityFromItem(item, ddbglCls) ?? null;
+          await RollUtil.triggerHeal(selectedActivity, msg, msgData, config);
 
-        break;
-      case ddbglCls===DDBGL_CLS.custom.cls:
-        selectedActivity = null;
-        await RollUtil.triggerCustomRoll(config);
+          break;
+        case ddbglCls===DDBGL_CLS.custom.cls:
+          selectedActivity = null;
+          await RollUtil.triggerCustomRoll(config);
 
-        break;
-      default: 
-        // 
-    } 
-
+          break;
+        default: 
+          LogUtil.log("streamlineDDBRoll",[ddbglCls]);
+          // 
+      } 
+    }catch(e){ 
+      LogUtil.warn("Error intercepting DDB roll", [e]);
+      ui.notifications.warn("There was a problem intercepting the DDB roll. Please check if you have enabled 'Item and Spells description cards' on DDB Gamelog configuration options");
+      return false; 
+    }
+    return true;
   } 
 
   /**
@@ -111,7 +118,7 @@ export class RollUtil{
         flags: {
           rsr5e: config.roll.flags.rsr5e,
           [MODULE_SHORT]: { 
-            processed: false, 
+            processed: true, 
             rollMode: msgData.rollMode,
             cls: msg.flags["ddb-game-log"].cls,
             flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
@@ -121,20 +128,10 @@ export class RollUtil{
       }
     });
     usageResults.message.rolls = activityRolls;
-    // usageResults.message.flags[MODULE_SHORT] = { 
-    //   processed: false, 
-    //   rollMode: msgData.rollMode,
-    //   cls: msg.flags["ddb-game-log"].cls,
-    //   flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
-    //           `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`
-    // }
+
     usageResults.message.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors();
-    // usageResults.message.flags.dnd5e.messageType = "roll";
     usageResults.message.flags = usageResults.message.flags ?? {};
-    // usageResults.message.flags.rsr5e = {
-    //   processed: true,
-    //   quickRoll: false
-    // }
+
     LogUtil.log("USAGE RESULTS", [usageResults]);
 
     await ChatMessage5e.create(usageResults.message, {rollMode: msgData.rollMode });
@@ -155,7 +152,7 @@ export class RollUtil{
   static triggerDamage = async(selectedActivity, msg, msgData, config) => {
     let usageResults;
     if(!selectedActivity){
-      throw new Error('No associated activity found for ' + item.name);
+      throw new Error('No associated activity found.');
     }
 
     if(!selectedActivity.attack){
@@ -190,7 +187,7 @@ export class RollUtil{
     config.message.flags = config.roll.flags;
 
     // await ChatMessage5e.create(config.message, {rollMode: msgData.rollMode }); 
-    await activityRolls[0].toMessage(config.message); 
+    await activityRolls[0].toMessage(config.message, {rollMode: msgData.rollMode });
     
     if(!selectedActivity.attack){
       game.user.targets.forEach(token => { 
@@ -238,9 +235,10 @@ export class RollUtil{
 
     // copy terms from the original roll and recalculate
     RollUtil.replaceTerms(testRolls[0], msg.rolls[0]);
+    LogUtil.log("rollMode", [msgData.rollMode]);
 
     // Create message with the provided roll and msg data
-    await testRolls[0].toMessage(config.message);
+    await testRolls[0].toMessage(config.message, {rollMode: msgData.rollMode });
   }
 
   /**
@@ -253,7 +251,7 @@ export class RollUtil{
   static triggerHeal = async(selectedActivity, msg, msgData, config) => {
     let usageResults;
     if(!selectedActivity){
-      throw new Error('No associated activity found for '+ddbglCls);
+      throw new Error('No associated activity found.');
     }
 
     usageResults = await ActivityUtil.ddbglUse(selectedActivity, config.roll, config.dialog, { 
@@ -284,7 +282,7 @@ export class RollUtil{
     config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors();
     config.message.flags = config.roll.flags;
 
-    await activityRolls[0].toMessage(config.message);
+    await activityRolls[0].toMessage(config.message, {rollMode: msgData.rollMode });
   }
 
   /**
@@ -295,7 +293,7 @@ export class RollUtil{
     config.message.flags = config.roll.flags;
 
     // Create message with the provided roll and msg data, without modifications
-    await msg.rolls[0].toMessage(config.message);
+    await msg.rolls[0].toMessage(config.message, {rollMode: msgData.rollMode });
   }
 
   /**
