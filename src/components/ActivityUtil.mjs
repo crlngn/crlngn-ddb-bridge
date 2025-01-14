@@ -22,10 +22,10 @@ export class ActivityUtil {
 
     const activityByType = (type) => {
       const activity = activities.find(act => {
-        // LogUtil.log("activityByType",[act.type, type, act.type==type]);
+        LogUtil.log("activityByType",[act.type, type, act.type==type]);
         return act.type===type
       });
-      // LogUtil.log("activityByType", [item, activities, activity]);
+      LogUtil.log("activityByType", [item, activities, activity]);
       return activity;
     }
 
@@ -34,7 +34,7 @@ export class ActivityUtil {
         selectedActivity = activityByType(DDBGL_CLS.toHit.actionType);
         break;
       case DDBGL_CLS.damage.cls: // damage roll
-        if(hasAttack && hasDamage){ // damage from attack roll
+        if(hasAttack){ // damage from attack roll
           selectedActivity = activityByType(DDBGL_CLS.toHit.actionType);
         }else if(hasSave && hasDamage){ // damage from saving throw
           selectedActivity = activityByType(DDBGL_CLS.save.actionType);

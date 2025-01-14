@@ -11,7 +11,8 @@ export const HOOKS_CORE = {
   CREATE_CHAT_MESSAGE: "createChatMessage", 
   RENDER_CHAT_MESSAGE: "renderChatMessage" ,
   CREATE_MEASURED_TEMPLATE: "createMeasuredTemplate",
-  REFRESH_MEASURED_TEMPLATE: "refreshMeasuredTemplate"
+  REFRESH_MEASURED_TEMPLATE: "refreshMeasuredTemplate",
+  CLOSE_SETTINGS_CONFIG: "closeSettingsConfig"
 }
 
 /**

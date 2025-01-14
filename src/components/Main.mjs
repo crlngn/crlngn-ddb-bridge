@@ -1,3 +1,4 @@
+import { DDBGL_CLS } from "../constants/DDBGL.mjs";
 import { MODULE_SHORT } from "../constants/General.mjs";
 
 import { HOOKS_CORE, HOOKS_DND5E } from "../constants/Hooks.mjs";
@@ -18,15 +19,26 @@ export class Main {
   static registerHooks(){
 
     Hooks.once(HOOKS_CORE.INIT,()=>{
+      Main.isMidiOn = GeneralUtil.isModuleOn("midi-qol");
+      LogUtil.log("Initiating module", [game.modules?.get("ddb-game-log")], true);
+      
 
+      SettingsUtil.registerSettings();
+    })
+
+    Hooks.once(HOOKS_CORE.READY, () => {   
       Main.registerActivityHooks();
       Main.registerRollHooks();
       Main.registerChatHooks();
-      Main.registerTemplateHooks();
-      SettingsUtil.registerSettings();
+      Main.registerTemplateHooks(); 
 
-      Main.isMidiOn = GeneralUtil.isModuleOn("midi-qol");
-      LogUtil.log("Initiating module",[CONFIG, Main.isMidiOn], null, true);
+      // const test = game.settings.storage.get("world");
+      // LogUtil.log("Checking module", [game.settings.storage.get("world").getItem("ddb-game-log.enable_chatcards")], true);
+      SettingsUtil.resetGamelogSettings();
+    });
+
+    Hooks.on(HOOKS_CORE.CLOSE_SETTINGS_CONFIG, () => {
+      SettingsUtil.resetGamelogSettings();
     })
   }
 
@@ -153,7 +165,7 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
 
   if(ddbglCls && !isProcessed){ 
     isDDBGL = true; 
-    actor = msgConfig.actor || null;
+    actor = msgConfig.actor || game.actors.get(msgConfig.speaker.actor) || null;
     itemId =  msgConfig.flags?.["ddb-game-log"]?.["itemId"] || ""; 
 
     msg.flags = {
@@ -164,11 +176,32 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
       msg.flags[MODULE_SHORT].processed = true;
       isProcessed = true;
     }
-    
-    LogUtil.log(HOOKS_CORE.PRE_CREATE_CHAT_MESSAGE + " B", [msgConfig, msg, Main.isMidiOn])
+
+    LogUtil.log("rollMode",[actor, msgConfig.rollMode]);
+
     if(actor){
-      item = itemId ? actor.items.find((it) => it.id == itemId) : "";
-      RollUtil.streamlineDDBRoll(ddbglCls, item, msg, msgConfig);
+      item = itemId ? actor.items.find((it) => it.id == itemId) : null;
+
+      if(!item){ 
+        const flavorElem = document.createElement("div");
+        flavorElem.innerHTML = msgConfig.flavor;
+        const itemName = flavorElem?.querySelector("span:first-child")?.innerHTML.replace(":","");
+        item = itemName ? actor.items.find((it) => it.name == itemName ) : null;
+        
+      }
+      if((ddbglCls === DDBGL_CLS.toHit || 
+          ddbglCls === DDBGL_CLS.damage ||
+          ddbglCls === DDBGL_CLS.heal ) 
+          && !item){
+            LogUtil.log("Settings", [game.settings])
+        ui.notifications.warn("Please enable 'description cards' in DDB Gamelog config.");
+        return true;
+      }else{
+        RollUtil.streamlineDDBRoll(ddbglCls, item, msg, msgConfig);
+      }
+    }else{
+      ui.notifications.warn("Could not find the actor. Have you mapped it on DDB Gamelog?");
+      return true;
     }
   }
 

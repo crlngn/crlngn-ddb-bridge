@@ -8,10 +8,15 @@ export class LogUtil {
      * @param {any[]} data - data to log on console
      */
     static log(ref="", data=[], bypassSettings=false){
-      const isDebugModeOn = bypassSettings || SettingsUtil.get("debug-mode");
-      if(!isDebugModeOn){ return };
+      try{
+        const debugSetting = SettingsUtil.get(SETTINGS.debugMode.tag);
+        const isDebugModeOn = bypassSettings || debugSetting;
+        if(!isDebugModeOn){ return };
 
-      console.log(...DEBUG_TAG, ref, ...data);
+        console.log(...DEBUG_TAG, ref, ...data);
+      }catch(e){
+        console.log(...DEBUG_TAG, ref, ...data);
+      }
     }
 
     /**
