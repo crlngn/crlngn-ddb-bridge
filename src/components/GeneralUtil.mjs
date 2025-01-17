@@ -1,13 +1,15 @@
 import { CHAR_ABILITIES } from "../constants/General.mjs";
 import { LogUtil } from "./LogUtil.mjs";
+import { SettingsUtil } from "./SettingsUtil.mjs";
 
 export class GeneralUtil {
   /**
    * Identifies the current selected or targeted tokens
+   * @param {User5e} user
    * @returns {Set} A set of targeted tokens
    */
   static getTargets(user) {
-    let targetTokens = game.user.targets || user.targets || canvas.tokens?.controlled;//game.user.selected || user.selected || [];
+    let targetTokens = user.targets || game.user.targets || canvas.tokens?.controlled;
 
     return new Set([...targetTokens]);
   }
@@ -29,6 +31,11 @@ export class GeneralUtil {
    return Array.from(targets.values());
   }
 
+  /**
+   * 
+   * @param {String} itemUuid 
+   * @returns {Actor5e}
+   */
   static getActorFromItem(itemUuid){
     const actorId = itemUuid.split(".")[1];
     const actor = game.actors.get(actorId);
@@ -73,21 +80,21 @@ export class GeneralUtil {
   }
 
   /**
-   * Removes the MeasuredTemplate
+   * Removes the MeasuredTemplate 
    * @param {Item5e} item 
    */
   static removeTemplateForItem (item) {
+    LogUtil.log("removeTemplateForItem - A", [item]);
+    const removeTemplateSettingOn = SettingsUtil.get("remove-template");
+    LogUtil.log("removeTemplateForItem - B", [removeTemplateSettingOn]);
+    if(!removeTemplateSettingOn){ return; }
     const templates = canvas.templates.objects.children.filter(mt => {
-      return mt.document.flags.dnd5e.item === item.uuid;
+      return mt.document.flags.dnd5e.item === item?.uuid;
     });
 
     canvas.scene.deleteEmbeddedDocuments('MeasuredTemplate', templates.map(i=>i.id));
   }
 
-
-  static getItemFromFlavor (actor, msg) {
-    const flavor = msg.flavor;
-  }
 
   static html(parent, selector) {
     return parent.querySelector(selector);

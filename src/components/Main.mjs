@@ -20,19 +20,16 @@ export class Main {
 
     Hooks.once(HOOKS_CORE.INIT,()=>{
       Main.isMidiOn = GeneralUtil.isModuleOn("midi-qol");
-      LogUtil.log("Initiating module", [game.modules?.get("ddb-game-log")], true);
+      LogUtil.log("Initiating module", [], true);
       
-      SettingsUtil.registerSettings();
-    })
-
-    Hooks.once(HOOKS_CORE.READY, () => {   
       Main.registerActivityHooks();
       Main.registerRollHooks();
       Main.registerChatHooks();
       Main.registerTemplateHooks(); 
+    })
 
-      // const test = game.settings.storage.get("world");
-      // LogUtil.log("Checking module", [game.settings.storage.get("world").getItem("ddb-game-log.enable_chatcards")], true);
+    Hooks.once(HOOKS_CORE.READY, () => { 
+      SettingsUtil.registerSettings();
       SettingsUtil.resetGamelogSettings();
     });
 
@@ -155,7 +152,7 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
   let actor, ddbglCls, itemId, item, isProcessed=false;
   
   const msg = { ...chatMessage };
-  ddbglCls = chatMessage.getFlag("ddb-game-log","cls"); // does the flag exist?
+  ddbglCls = chatMessage.getFlag("ddb-game-log","cls")?.toLowerCase() || ""; // does the flag exist?
   isProcessed = chatMessage.getFlag(MODULE_SHORT, "processed") || false;
 
   LogUtil.log(HOOKS_CORE.PRE_CREATE_CHAT_MESSAGE, [ 
@@ -163,43 +160,53 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
   ]);
 
   if(ddbglCls && !isProcessed){ 
-    isDDBGL = true; 
     actor = msgConfig.actor || game.actors.get(msgConfig.speaker.actor) || null;
     itemId =  msgConfig.flags?.["ddb-game-log"]?.["itemId"] || ""; 
 
-    msg.flags = {
-      ...msg.flags,
-      ...msgConfig.flags
-    }
-    if(msg.flags[MODULE_SHORT]){
-      msg.flags[MODULE_SHORT].processed = true;
-      isProcessed = true;
-    }
-
-    LogUtil.log("rollMode",[actor, msgConfig.rollMode]);
-
     if(actor){
-      item = itemId ? actor.items.find((it) => it.id == itemId) : null;
+      isDDBGL = true; 
+      msg.flags = {
+        ...msg.flags,
+        ...msgConfig.flags
+      }
+      if(msg.flags[MODULE_SHORT]){
+        msg.flags[MODULE_SHORT].processed = true;
+        isProcessed = true;
+      }
+
+      item = itemId ? actor.items.find((it) => {
+        // LogUtil.log("item",[it]); 
+        return it.id === itemId; 
+      }) : null; 
+      
+      const flavorElem = document.createElement("div");
+      flavorElem.innerHTML = msgConfig.flavor;
+      let actionName = flavorElem?.querySelector("span:first-child")?.innerHTML.replace(":","");
 
       if(!item){ 
-        const flavorElem = document.createElement("div");
-        flavorElem.innerHTML = msgConfig.flavor;
-        const itemName = flavorElem?.querySelector("span:first-child")?.innerHTML.replace(":","");
-        item = itemName ? actor.items.find((it) => it.name == itemName ) : null;
-        
+        // match exact name
+        item = actionName ? actor.items.find((it) => it.name.toLowerCase() === actionName.toLowerCase()) : null;
+        // if no exact name, look for the name with "(Legacy)" tag
+        if(!item){ item = actor.items.find((it) => it.name.toLowerCase() === (actionName + " (Legacy)").toLowerCase()) };
       }
-      if((ddbglCls === DDBGL_CLS.toHit || 
-          ddbglCls === DDBGL_CLS.damage ||
-          ddbglCls === DDBGL_CLS.heal ) 
-          && !item){
-            LogUtil.log("Settings", [game.settings])
-        ui.notifications.warn("Please enable 'description cards' in DDB Gamelog config.");
+      
+      /*
+      if(ddbglCls === DDBGL_CLS.custom.cls &&
+        actionName !== "Initiative"
+      ){
+        return true;
+      }else */
+      if(!item &&
+        (ddbglCls === DDBGL_CLS.toHit.cls || 
+        ddbglCls === DDBGL_CLS.damage.cls ||
+        ddbglCls === DDBGL_CLS.heal.cls )){
+        LogUtil.error("Could not find the specified item", [ddbglCls, actor.items]);
         return true;
       }else{
-        RollUtil.streamlineDDBRoll(ddbglCls, item, msg, msgConfig);
+        RollUtil.streamlineDDBRoll(ddbglCls, item, actionName, msg, msgConfig);
       }
     }else{
-      ui.notifications.warn("Could not find the actor. Have you mapped it on DDB Gamelog?");
+      LogUtil.warn("Could not find the actor from DDB Gamelog roll");
       return true;
     }
   }

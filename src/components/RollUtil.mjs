@@ -7,7 +7,7 @@ import ChatMessage5e from "../../dnd5e/module/documents/chat-message.mjs";
 
 export class RollUtil{
 
-  static streamlineDDBRoll = async (ddbglCls, item, msg, msgData) => {
+  static streamlineDDBRoll = async (ddbglCls, item, actionName, msg, msgData) => {
     let selectedActivity = null, castActivity = null;
 
     LogUtil.log("streamlineDDBRoll", [ddbglCls, item, {...msg}, msgData]); 
@@ -36,7 +36,7 @@ export class RollUtil{
     config.message = {
       flavor: msg.flavor,
       speaker: msg.speaker,
-      whisper: "",//msg.whisper,
+      whisper: msg.whisper,
       user: game.user,
       blind: msg.blind || GeneralUtil.isPrivateRoll(msgData.rollMode),
       rollMode: msgData.rollMode
@@ -67,7 +67,7 @@ export class RollUtil{
           break;
         case ddbglCls===DDBGL_CLS.custom.cls:
           selectedActivity = null;
-          await RollUtil.triggerCustomRoll(config);
+          await RollUtil.triggerCustomRoll(config, msg, actionName, msgData);
 
           break;
         default: 
@@ -75,8 +75,8 @@ export class RollUtil{
           // 
       } 
     }catch(e){ 
-      LogUtil.warn("Error intercepting DDB roll", [e]);
-      ui.notifications.warn("There was a problem intercepting the DDB roll. Please check if you have enabled 'Item and Spells description cards' on DDB Gamelog configuration options");
+      LogUtil.error("Error intercepting DDB roll", [e, ddbglCls, item, msg, msgData]);
+      // ui.notifications.warn("Could not intercept the DDB roll. Please check if 'description cards' are enabled on DDB Gamelog config options");
       return false; 
     }
     return true;
@@ -198,7 +198,7 @@ export class RollUtil{
     }
     setTimeout(() => {
       GeneralUtil.removeTemplateForItem(selectedActivity.item);
-    }, 2500); 
+    }, 3000); 
   }
   
   /**
@@ -235,7 +235,6 @@ export class RollUtil{
 
     // copy terms from the original roll and recalculate
     RollUtil.replaceTerms(testRolls[0], msg.rolls[0]);
-    LogUtil.log("rollMode", [msgData.rollMode]);
 
     // Create message with the provided roll and msg data
     await testRolls[0].toMessage(config.message, {rollMode: msgData.rollMode });
@@ -289,11 +288,11 @@ export class RollUtil{
    * If DDB Gamelog message is a custom roll, just post it
    * @param {object} config 
    */
-  static triggerCustomRoll = async(config, msg) => {
+  static triggerCustomRoll = async(config, msg, actionName, msgData) => {
     config.message.flags = config.roll.flags;
 
     // Create message with the provided roll and msg data, without modifications
-    await msg.rolls[0].toMessage(config.message, {rollMode: msgData.rollMode });
+    await msg.rolls[0].toMessage(msg, { ...msgData });
   }
 
   /**
