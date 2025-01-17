@@ -18,13 +18,12 @@ export class ActivityUtil {
     const activities = item.system?.activities;
     const hasAttack = item.hasAttack;
     const hasSave = item.hasSave;
-    const hasDamage = item.hasDamage;
 
     const activityByType = (type) => {
       const activity = activities.find(act => { 
-        return act.type===type;
+        return act.type == type;
       });
-      LogUtil.log("activityByType", [item, type, activities, activity]); 
+      LogUtil.log("activityByType", [item, type, activities.size, activity]); 
       return activity;
     }
 
@@ -35,9 +34,9 @@ export class ActivityUtil {
       case DDBGL_CLS.damage.cls: // damage roll
         if(hasAttack){ // damage from attack roll
           selectedActivity = activityByType(DDBGL_CLS.toHit.actionType);
-        }else if(hasSave && hasDamage){ // damage from saving throw
+        }else if(hasSave){ // damage from saving throw
           selectedActivity = activityByType(DDBGL_CLS.save.actionType);
-        }else if(hasDamage){
+        }else{
           selectedActivity = activityByType(DDBGL_CLS.damage.actionType);
         }
         break;
@@ -86,7 +85,6 @@ export class ActivityUtil {
 
     // Create an item clone to work with throughout the rest of the process
     let item = activity.item.clone({}, { keepId: true });
-    //activity = item.system.activities.get(activity.id);
 
     const usageConfig = activity._prepareUsageConfig(usage);
     
@@ -168,7 +166,7 @@ export class ActivityUtil {
     if ( Hooks.call("dnd5e.postUseActivity", activity, usageConfig, results) === false ) return results;
 
     // Trigger any primary action provided by this activity
-    if(triggerFinalActions){
+    if(triggerFinalActions && activity._triggerSubsequentActions){
       activity._triggerSubsequentActions(usageConfig, results);
     }
 
@@ -176,7 +174,6 @@ export class ActivityUtil {
   }
 
   /* -------------------------------------------- */
-
   /**
    * Display a chat message for this usage.
    * @param {Activity} activity
