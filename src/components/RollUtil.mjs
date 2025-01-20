@@ -6,7 +6,7 @@ import { MODULE_SHORT } from "../constants/General.mjs";
 import ChatMessage5e from "../../dnd5e/module/documents/chat-message.mjs";
 
 export class RollUtil{
-
+  // 
   static streamlineDDBRoll = async (ddbglCls, item, actionName, msg, msgData) => {
     let selectedActivity = null, castActivity = null;
 
@@ -97,8 +97,8 @@ export class RollUtil{
     // config specific to attack rolls
     config.roll.flags.dnd5e.roll = { type: "attack"  };
     config.roll.flags.rsr5e = { processed: true  };
-    config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors();
-    config.message.flags = config.roll.flags;
+    config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors(); 
+    // config.message.flags = config.roll.flags;
 
     let activityRolls = await selectedActivity.rollAttack(config.roll, config.dialog, { create: false });
     if(activityRolls.length < 1){ return; }
@@ -115,6 +115,9 @@ export class RollUtil{
       data: { 
         rollMsg: msg.content, 
         rolls: activityRolls,
+        speaker: config.message.speaker,
+        flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
+                    `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`,
         flags: {
           rsr5e: config.roll.flags.rsr5e,
           [MODULE_SHORT]: { 
@@ -185,6 +188,11 @@ export class RollUtil{
 
     config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors();
     config.message.flags = config.roll.flags;
+    config.message.flags = {
+      ...config.message,
+      dnd5e: config.roll.flags.dnd5e,
+      rsr5e: config.roll.flags.rsr5e
+    };
 
     // await ChatMessage5e.create(config.message, {rollMode: msgData.rollMode }); 
     await activityRolls[0].toMessage(config.message, {rollMode: msgData.rollMode });
@@ -222,13 +230,18 @@ export class RollUtil{
     if(ability){
       config.roll.flags.dnd5e.roll.ability = ability.abbrev;
     }
-    config.message.flags = config.roll.flags;
+    config.message.flags = {
+      ...config.message,
+      dnd5e: config.roll.flags.dnd5e,
+      rsr5e: config.roll.flags.rsr5e
+    };
 
     // roll attack from activity without creating ChatMessage
     if(testType===DDBGL_CLS.save.cls){
-      testRolls = await msgData.actor.rollSavingThrow({ ability: ability?.abbrev }, config.dialog, { create: false });
+      testRolls = await msgData.actor.rollSavingThrow({ ability: ability?.abbrev }, config.dialog, { create: false }); 
     }else if(testType===DDBGL_CLS.check.cls){
-      testRolls = await msgData.actor.rollAbilityCheck({ ability: ability?.abbrev }, config.dialog, { create: false });
+      testRolls = await msgData.actor.rollAbilityCheck({ ability: ability?.abbrev }, config.dialog, { create: false }); 
+      LogUtil.log("triggerAbilityTest", [ testRolls, config.message ]); 
     }
     
     if(testRolls.length < 1){ return; }
@@ -279,7 +292,12 @@ export class RollUtil{
 
     // config specific to damage rolls
     config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors();
-    config.message.flags = config.roll.flags;
+    // config.message.flags = config.roll.flags;
+    config.message.flags = {
+      ...config.message,
+      dnd5e: config.roll.flags.dnd5e,
+      rsr5e: config.roll.flags.rsr5e
+    };
 
     await activityRolls[0].toMessage(config.message, {rollMode: msgData.rollMode });
   }
@@ -289,7 +307,12 @@ export class RollUtil{
    * @param {object} config 
    */
   static triggerCustomRoll = async(config, msg, actionName, msgData) => {
-    config.message.flags = config.roll.flags;
+    // config.message.flags = config.roll.flags;
+    config.message = {
+      ...config.message,
+      dnd5e: config.roll.flags.dnd5e,
+      rsr5e: config.roll.flags.rsr5e
+    };
 
     // Create message with the provided roll and msg data, without modifications
     await msg.rolls[0].toMessage(msg, { ...msgData });

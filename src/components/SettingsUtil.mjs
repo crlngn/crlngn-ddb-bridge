@@ -1,5 +1,5 @@
 import { MODULE_ID, MODULE_SHORT } from "../constants/General.mjs";
-import { HOOKS_CORE } from "../constants/Hooks.mjs";
+// import { HOOKS_CORE } from "../constants/Hooks.mjs";
 import { SETTINGS } from "../constants/Settings.mjs";
 import { GeneralUtil } from "./GeneralUtil.mjs";
 import { LogUtil } from "./LogUtil.mjs";
@@ -61,20 +61,6 @@ export class SettingsUtil {
         setting = selectedSetting?.value;
         LogUtil.log("GET Setting", [selectedSetting, setting]);
       }
-
-
-      // const client = game.settings.storage.get("client");
-      // let selectedSetting = client[`${moduleName}.${settingName}`];
-      // //
-      // if(selectedSetting===undefined){
-      //   const world = game.settings.storage.get("world");
-      //   selectedSetting = world.getSetting(`${moduleName}.${settingName}`);
-      // }
-      // const value = selectedSetting?.value!==undefined ? selectedSetting?.value : selectedSetting?.config?.default || false;
-      
-      // LogUtil.log("GET Setting", [selectedSetting, value]);
-      // return value;
-
 
       return setting;
     }

@@ -195,17 +195,18 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
         actionName !== "Initiative"
       ){
         return true;
-      }else */
+      } else */
+      
       if(!item &&
         (ddbglCls === DDBGL_CLS.toHit.cls || 
-        ddbglCls === DDBGL_CLS.damage.cls ||
-        ddbglCls === DDBGL_CLS.heal.cls )){
-        LogUtil.error("Could not find the specified item", [ddbglCls, actor.items]);
+        ddbglCls === DDBGL_CLS.damage.cls || 
+        ddbglCls === DDBGL_CLS.heal.cls)){
+        LogUtil.error("Could not find an item for the roll", [ddbglCls, actor.items]);
         return true;
       }else{
         RollUtil.streamlineDDBRoll(ddbglCls, item, actionName, msg, msgConfig);
       }
-    }else{
+    }else{ 
       LogUtil.warn("Could not find the actor from DDB Gamelog roll");
       return true;
     }
@@ -229,6 +230,7 @@ const onRenderChatMessage = (chatMessage, html) => {
   let headerFlavor = html.querySelector(".message-header .flavor-text");
 
   html.classList.remove('ddb-game-log-open-card');
+  html.classList.add('crlngn');
   /** replace author subtitle with flavor text, for space optimization */
   const flavorText = headerFlavor?.innerHTML || "";
   LogUtil.log(HOOKS_DND5E.RENDER_CHAT_MESSAGE,[flavorText, chatMessage, html, html.querySelector(".message-header .flavor-text")]);
