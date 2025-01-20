@@ -52,7 +52,8 @@ Chat card layout - start
 :is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn .damage {
   color: #df7b7b;
 }
-:is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn .heal {
+:is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn .heal, 
+:is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn .save {
   color: #6cbf5b;
 }
 .dnd5e2 .chat-message.damage ul.target.unlist{
