@@ -2,8 +2,11 @@ import { LogUtil } from "./LogUtil.mjs";
 import { ActivityUtil } from  "./ActivityUtil.mjs";
 import { GeneralUtil } from "./GeneralUtil.mjs";
 import { DDBGL_CLS } from "../constants/DDBGL.mjs";
-import { MODULE_SHORT } from "../constants/General.mjs";
+import { MODULE_SHORT, ROLL_TYPES } from "../constants/General.mjs";
 import ChatMessage5e from "../../dnd5e/module/documents/chat-message.mjs";
+import { SettingsUtil } from "./SettingsUtil.mjs";
+import { SETTINGS } from "../constants/Settings.mjs";
+import { Main } from "./Main.mjs";
 
 export class RollUtil{
   // 
@@ -14,7 +17,7 @@ export class RollUtil{
     let config = {}, originalRoll = msg.rolls[0];
 
     config.dialog = {
-      configure: false 
+      configure: true // RollUtil.#getDialogSetting(msg) || true
     }; 
 
     config.roll = {
@@ -95,9 +98,13 @@ export class RollUtil{
     if(!selectedActivity){ throw new Error('No associated activity found.') }
 
     // config specific to attack rolls
-    config.roll.flags.dnd5e.roll = { type: "attack"  };
     config.roll.flags.rsr5e = { processed: true  };
     config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors(); 
+    config.roll.flags.dnd5e.roll = { type: ROLL_TYPES.attack }; 
+    // config.roll.flags.dnd5e.activity = {
+    //   ...config.roll.flags.dnd5e.activity,
+    //   type: ROLL_TYPES.attack
+    // }
     // config.message.flags = config.roll.flags;
 
     let activityRolls = await selectedActivity.rollAttack(config.roll, config.dialog, { create: false });
@@ -163,8 +170,6 @@ export class RollUtil{
       usageResults = await ActivityUtil.ddbglUse(selectedActivity, config.roll, config.dialog, { 
         create: false
       });
-      LogUtil.log("ACTIVITY", [usageResults]);
-      // usageResults = selectedActivity.use(config.roll, { configure: false }, { create: false });
       await ChatMessage5e.create(usageResults.message, {rollMode: msgData.rollMode }); 
     }
 
@@ -187,6 +192,7 @@ export class RollUtil{
     }
 
     config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors();
+    config.roll.flags.dnd5e.roll = { type: ROLL_TYPES.damage }; 
     config.message.flags = config.roll.flags;
     config.message.flags = {
       ...config.message,
@@ -228,7 +234,10 @@ export class RollUtil{
     };
 
     if(ability){
-      config.roll.flags.dnd5e.roll.ability = ability.abbrev;
+      config.roll.flags.dnd5e.roll = { 
+        type: testType===DDBGL_CLS.check.cls ? ROLL_TYPES.abilityCheck : ROLL_TYPES.abilitySave,
+        ability: ability.abbrev
+      }; 
     }
     config.message.flags = {
       ...config.message,
@@ -291,6 +300,7 @@ export class RollUtil{
     }
 
     // config specific to damage rolls
+    config.roll.flags.dnd5e.roll = { type: ROLL_TYPES.healing };
     config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors();
     // config.message.flags = config.roll.flags;
     config.message.flags = {
@@ -310,12 +320,18 @@ export class RollUtil{
     // config.message.flags = config.roll.flags;
     config.message = {
       ...config.message,
-      dnd5e: config.roll.flags.dnd5e,
+      dnd5e: {
+        ...config.roll.flags.dnd5e,
+        // roll: { 
+        //   ...config.roll.flags.dnd5e.roll,
+        //   type: ROLL_TYPES.custom
+        // }
+      },
       rsr5e: config.roll.flags.rsr5e
     };
 
     // Create message with the provided roll and msg data, without modifications
-    await msg.rolls[0].toMessage(msg, { ...msgData });
+    await msg.rolls[0].toMessage(config.message, { ...msgData });
   }
 
   /**
@@ -340,6 +356,24 @@ export class RollUtil{
     roll._total = roll._evaluateTotal();
     roll.resetFormula();
     return roll;
+  }
+
+  static getDialogSetting(defaultOption, config){
+    const skipConfig = SettingsUtil.get(SETTINGS.skipRollConfig.tag); 
+    LogUtil.log("getDialogSetting", ["skip mode: " + skipConfig, Main.keysPressed, config]); 
+
+    if(config.flags?.["ddb-game-log"] !== undefined){ 
+      return false; // ddb gamelog is always skipped
+    }else{
+      switch(skipConfig){ 
+        case 1: 
+          return Main.keysPressed.indexOf("Shift")==-1 ? false : true; // skip unless shift is pressed
+        default:
+          return defaultOption;
+      }
+    }
+  
+    
   }
 }
 

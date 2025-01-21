@@ -2,6 +2,8 @@ import { DDBGL_CLS } from "../constants/DDBGL.mjs";
 import { MODULE_SHORT } from "../constants/General.mjs";
 
 import { HOOKS_CORE, HOOKS_DND5E } from "../constants/Hooks.mjs";
+import { SETTINGS } from "../constants/Settings.mjs";
+import { ChatUtil } from "./ChatUtil.mjs";
 import { GeneralUtil } from "./GeneralUtil.mjs";
 import { LogUtil } from "./LogUtil.mjs";
 import { RollUtil } from "./RollUtil.mjs";
@@ -12,7 +14,7 @@ export class Main {
   static isMidiOn = false;
 
   static init(){
-    // Main.setupKeyListeners();
+    Main.setupKeyListeners();
     Main.registerHooks();
   }
 
@@ -114,13 +116,14 @@ const onPreUseActivity = async (
 
   // By default, configuration dialog is disabled to speed up roll
   // Allow configuration if Shift key is pressed
-  if(Main.keysPressed.indexOf("Shift")==-1){
-    dialogConfig.configure = false;
-  }else{
-    dialogConfig.configure = true;
-  }
+  // if(Main.keysPressed.indexOf("Shift")==-1){
+  //   dialogConfig.configure = false;
+  // }else{
+  //   dialogConfig.configure = true;
+  // }
+  // dialogConfig.configure = RollUtil.getDialogSetting(dialogConfig.configure, usageConfig);
 
-  LogUtil.log(HOOKS_DND5E.PRE_USE_ACTIVITY, [ activity, usageConfig, dialogConfig, msgConfig, Main.keysPressed ]);
+  LogUtil.log(HOOKS_DND5E.PRE_USE_ACTIVITY, [ usageConfig, dialogConfig, msgConfig, Main.keysPressed ]);
 
   return true;
 }
@@ -152,7 +155,7 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
   let actor, ddbglCls, itemId, item, isProcessed=false;
   
   const msg = { ...chatMessage };
-  ddbglCls = chatMessage.getFlag("ddb-game-log","cls")?.toLowerCase() || ""; // does the flag exist?
+  ddbglCls = GeneralUtil.isModuleOn("ddb-game-log") ? chatMessage.getFlag("ddb-game-log","cls")?.toLowerCase() || "" : ""; // does the flag exist?
   isProcessed = chatMessage.getFlag(MODULE_SHORT, "processed") || false;
 
   LogUtil.log(HOOKS_CORE.PRE_CREATE_CHAT_MESSAGE, [ 
@@ -188,19 +191,12 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
         item = actionName ? actor.items.find((it) => it.name.toLowerCase() === actionName.toLowerCase()) : null;
         // if no exact name, look for the name with "(Legacy)" tag
         if(!item){ item = actor.items.find((it) => it.name.toLowerCase() === (actionName + " (Legacy)").toLowerCase()) };
-      }
+      } 
       
-      /*
-      if(ddbglCls === DDBGL_CLS.custom.cls &&
-        actionName !== "Initiative"
-      ){
-        return true;
-      } else */
-      
-      if(!item &&
+      if(!item && 
         (ddbglCls === DDBGL_CLS.toHit.cls || 
         ddbglCls === DDBGL_CLS.damage.cls || 
-        ddbglCls === DDBGL_CLS.heal.cls)){
+        ddbglCls === DDBGL_CLS.heal.cls)){ 
         LogUtil.error("Could not find an item for the roll", [ddbglCls, actor.items]);
         return true;
       }else{
@@ -225,25 +221,16 @@ const onCreateChatMessage = (chatMessage, options, userId) => {
  * @param {HTMLElement} html
  */
 const onRenderChatMessage = (chatMessage, html) => { 
-  let senderSubtitle = html.querySelector(".message-sender .subtitle");
-  let senderFlavor = html.querySelector(".message-sender .flavor-text");
-  let headerFlavor = html.querySelector(".message-header .flavor-text");
+  LogUtil.log(HOOKS_DND5E.RENDER_CHAT_MESSAGE,[chatMessage, html]);
 
-  html.classList.remove('ddb-game-log-open-card');
-  html.classList.add('crlngn');
-  /** replace author subtitle with flavor text, for space optimization */
-  const flavorText = headerFlavor?.innerHTML || "";
-  LogUtil.log(HOOKS_DND5E.RENDER_CHAT_MESSAGE,[flavorText, chatMessage, html, html.querySelector(".message-header .flavor-text")]);
-  if(flavorText !== ""){
-    if(senderSubtitle) senderSubtitle.innerHTML = flavorText;
-    if(senderFlavor) senderFlavor.innerHTML = flavorText;
-  }
+  ChatUtil.enrichCard(chatMessage, html);
 }
 
 const onPreRoll = (rollConfig, dialogConfig, messageConfig) => {
   LogUtil.log(HOOKS_DND5E.PRE_ROLL_V2, [rollConfig, dialogConfig, messageConfig]);
 
-  dialogConfig.configure = false;
+  // dialogConfig.configure = false;
+  dialogConfig.configure = RollUtil.getDialogSetting(dialogConfig.configure, rollConfig);
 
   return;
 }
@@ -264,13 +251,7 @@ const onPreRollSavingThrow = (rollConfig, dialogConfig, messageConfig) => {
 const onPreRollAttack = (
   config, dialogConfig, message
 ) =>{
-  LogUtil.log(HOOKS_DND5E.PRE_ROLL_ATTACK_V2, [config, dialogConfig, message, Main.keysPressed]);
-  
-  // By default, configuration dialog is disabled to speed up roll
-  // Allow configuration if Shift key is pressed
-  if(Main.keysPressed.indexOf("Shift")==-1){
-    dialogConfig.configure = false;
-  }
+  LogUtil.log(HOOKS_DND5E.PRE_ROLL_ATTACK_V2, [message, dialogConfig, config]);
 
   return true;
 }
@@ -288,9 +269,9 @@ const onPreRollDamage = (
   LogUtil.log(HOOKS_DND5E.PRE_ROLL_DAMAGE_V2, [config, dialogConfig, message, Main.keysPressed]);
   // By default, configuration dialog is disabled to speed up roll
   // Allow configuration if Shift key is pressed
-  if(Main.keysPressed.indexOf("Shift")==-1){
-    dialogConfig.configure = false;
-  }
+  // if(Main.keysPressed.indexOf("Shift")==-1){
+  //   dialogConfig.configure = false;
+  // }
   return true;
 }
 
@@ -318,9 +299,21 @@ const onRefreshTemplate = (template, options) => {
 
   if(!template.isOwner){ return; }
 
+  const templateTargeting = SettingsUtil.get("template-auto-target");
+  let maxDisposition = 3;
+
+  switch(templateTargeting){
+    case 1:
+      maxDisposition = 3; break;
+    case 2: 
+      maxDisposition = 0; break;
+    default: 
+      return;
+  }
+
   canvas.tokens.placeables[0]?.setTarget(false, { releaseOthers: true });
   for(let token of canvas.tokens.placeables){
-    if(template.shape.contains(token.center.x-template.x,token.center.y-template.y)){
+    if(token.document.disposition <= maxDisposition && template.shape.contains(token.center.x-template.x,token.center.y-template.y)){
       token.setTarget(!token.isTargeted, { releaseOthers: false });
     }
   }

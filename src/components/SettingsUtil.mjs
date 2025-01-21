@@ -24,11 +24,13 @@ export class SettingsUtil {
           hint: setting.hint,
           default: setting.default,
           type: setting.propType,
+          choices: setting.choices || null,
           scope: setting.scope,
           config: setting.config,
           onChange: value => SettingsUtil.apply(setting.tag, value)
         });
 
+        /* if the setting has never been defined, set as default value */
         if(SettingsUtil.get(setting.tag)===undefined){
           SettingsUtil.set(setting.tag, setting.default);
         }

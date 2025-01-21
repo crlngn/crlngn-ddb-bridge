@@ -1,11 +1,11 @@
 {
     "id": "crlngn-ddb-bridge",
     "title": "Carolingian DDB Bridge",
-    "version": "1.0.6",
+    "version": "1.1.0",
     "description": "Adds DDB Gamelog support for DnD 4.x and streamlines roll functionality",
     "url": "https://github.com/crlngn/crlngn-ddb-bridge",
     "manifest": "https://raw.githubusercontent.com/crlngn/crlngn-ddb-bridge/main/dist/module.json",
-    "download": "https://github.com/crlngn/crlngn-ddb-bridge/archive/refs/tags/v1.0.6.zip",
+    "download": "https://github.com/crlngn/crlngn-ddb-bridge/archive/refs/tags/v1.1.0.zip",
     "bugs": "https://github.com/crlngn/crlngn-ddb-bridge/issues",
     "readme": "https://github.com/crlngn/crlngn-ddb-bridge/main/README.md",
     "license": "https://mit-license.org/",
@@ -33,6 +33,9 @@
         }
       ],
       "requires": [
+        
+      ],
+      "recommends": [
         {
           "id": "ddb-game-log",
           "type": "module",
@@ -40,9 +43,7 @@
             "minimum": "2.2.0",
             "verified": "2.3.2-beta"
           }
-        }
-      ],
-      "recommends": [
+        },
         {
           "id": "ddb-importer",
           "type": "module",

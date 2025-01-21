@@ -13,9 +13,9 @@
 	--dnd5e-color-parchment: #f4efed;
 }
 
-/*********
+/*****************
 Chat card layout - start 
-**********/
+******************/
 
 .dnd5e2 .pill-lg{
 	border: none !important;
@@ -43,29 +43,55 @@ Chat card layout - start
   border: 0;
   border-radius: 3px;
 }
-:is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn .tohit {
+
+/* border - roll type */
+:is(.chat-popout, #chat-log, .chat-log) li.message:last-child:is(.roll),
+:is(.chat-popout, #chat-log, .chat-log) li.message:last-child:is(.custon) {
+  border: 2px solid #f5a623;
+}
+:is(.chat-popout, #chat-log, .chat-log) li.message:last-child:is(.attack) {
+  border: 2px solid #1b9af0 !important;
+}
+:is(.chat-popout, #chat-log, .chat-log) li.message:last-child:is(.damage) {
+  border: 2px solid #df7b7b;
+}
+:is(.chat-popout, #chat-log, .chat-log) li.message:last-child:is(.check),
+:is(.chat-popout, #chat-log, .chat-log) li.message:last-child:is(.skill),
+:is(.chat-popout, #chat-log, .chat-log) li.message:last-child:is(.ability),
+:is(.chat-popout, #chat-log, .chat-log) li.message:last-child:is(.tool) {
+  border: 2px solid #b55dff !important;
+}
+:is(.chat-popout, #chat-log, .chat-log) li.message:last-child:is(.heal), 
+:is(.chat-popout, #chat-log, .chat-log) li.message:last-child:is(.healing),
+:is(.chat-popout, #chat-log, .chat-log) li.message:last-child:is(.save) {
+  border: 2px solid #6cbf5b;
+}
+
+/* flavor text - roll type */
+:is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn span.roll {
+  color: #f5a623;
+}
+:is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn span.tohit {
   color: #1b9af0;
 }
-:is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn .check {
-  color: #b55dff;
-}
-:is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn .damage {
+:is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn span.damage {
   color: #df7b7b;
 }
-:is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn .heal, 
-:is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn .save {
+:is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn span.check {
+  color: #b55dff;
+}
+:is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn span.heal, 
+:is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn span.save {
   color: #6cbf5b;
 }
+
 .dnd5e2 .chat-message.damage ul.target.unlist{
 	width: calc(100% - 40px);
 	flex: 1 1 calc(100% - 40px);
 }
 
-
 /* card headers */
-/*.message.crlngn.ddbgl .dnd5e2.chat-card .card-header{
-  max-height: 10000px;
-}*/
+
 .message.crlngn.ddbgl .dnd5e2.chat-card .card-header.collapsed{
   max-height: 0px;
   padding: 0;
@@ -94,7 +120,7 @@ Chat card layout - start
   font-style: italic;
   letter-spacing: 0.02em;
   margin-top:3px;
-  font-size: var(--font-size-13);
+  font-size: var(--font-size-12);
   font-family: "Roboto", Arial, sans-serif;
 }
 
@@ -104,6 +130,9 @@ Chat card layout - start
   font-size: var(--font-size-12);
   font-family: "Roboto", Arial, sans-serif;
   display: none !important;
+}
+.message.crlngn .dnd5e2.chat-card .card-header.description:not(.collapsible){
+  display: none;
 }
 
 /* content */
@@ -207,8 +236,13 @@ Chat card layout - start
   content: "refund";
 }
 
-.dnd5e2.chat-card .card-buttons > button[data-action=rollSave] span.visible-dc:before {
-  content: "saving throw";
+.dnd5e2.chat-card .card-buttons > button[data-action=executeMacro] span:before {
+  content: "macro";
+}
+
+.dnd5e2.chat-card .card-buttons > button[data-action=rollSave]:after {
+  content: attr(data-ability) " save DC " attr(data-dc);
+  text-transform: uppercase;
 }
 
 /* effects / targets list */
@@ -264,7 +298,7 @@ body[data-ddb-custom-style=dark] .chat-message {
   background: #182026 !important;
   color: #8a9ba8;
   transition: border .2s ease-in-out;
-  border: 2px solid #182026 !important;
+  border: 2px solid #182026;
 }
 body[data-theme=dark] .chat-message:before,
 body[data-ddb-custom-style=dark] .chat-message:before {
@@ -279,9 +313,10 @@ body[data-ddb-custom-style=dark] .chat-message.ddb-game-log-message .message-con
 }
 
 /* headers */
-body[data-theme=dark] .chat-message .message-header .title,
-body[data-ddb-custom-style=dark] .chat-message .message-header .title {
-  color: #8a9ba8 !important;
+body[data-theme=dark] :is(.chat-popout, #chat-log, .chat-log) .chat-message .message-header .title,
+body[data-ddb-custom-style=dark] :is(.chat-popout, #chat-log, .chat-log) .chat-message .message-header .title {
+  color: #a8b4bc !important;
+  letter-spacing: 0.05em;
 }
 body[data-theme=dark] :is(.chat-popout, #chat-log, .chat-log) .message.crlngn .message-header .subtitle,
 body[data-theme=dark] :is(.chat-popout, #chat-log, .chat-log) .message .flavor-text, 

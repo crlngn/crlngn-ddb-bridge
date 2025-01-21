@@ -1,4 +1,4 @@
-**Latest Version:** 1.0.6
+**Latest Version:** 1.1.0
 
 **Requirements:** 
 - Foundry VTT version 12.328 to 12.331
@@ -16,7 +16,7 @@ Some features like the chat message styling and template auto-target do not depe
 
 ### IMPORTANT:
 - The module is currently **NOT** compatible with Midi-QOL. It might also not be compatible with other modules which modify rolls or chat messages - please check before using;
-- The module is currently compatible with Ready Set Roll 5e v3.4.2 (which will only work for rolls made from within Foundry)
+- The module is currently compatible with Ready Set Roll 5e v3.4.2~ (which will only work for rolls made from within Foundry)
 - This module is not compatible with versions of Foundry before v12 and DnD5e v4.0.x;
 
 ### FEATURES:
@@ -24,8 +24,8 @@ Some features like the chat message styling and template auto-target do not depe
 - Support for JB2A / Automated Animations for spells and attacks;
 - Spells rolled from DDB which have templates will auto-trigger its template placement in Foundry;
 - The template auto-targets tokens in the area of placement;
-- The template is auto-removed after damage is rolled;
-- After rolling leveled spells you will get a button on chat card to consume or refund a spell slot for that spell on the player's sheet;
+- The template is auto-removed after damage is rolled (configurable via settings);
+- After rolling leveled spells you will get a button on chat card to consume or refund a spell slot for that spell on the player's sheet (**Note:** the button currently consumes the regular level of the spell, not an upcast slot);
 - If the spell has a saving throw, you'll also get a button to quickly roll the saving throw for selected tokens
 - If you select "Dark" style mode on DDB Gamelog configurations, all chat cards will follow that style, including those rolled on Foundry;
 - Skips Foundry configuration window for quick rolls
@@ -34,7 +34,7 @@ Some features like the chat message styling and template auto-target do not depe
 - Please use the issue tracker to report any bugs and enhancements using the appropriate labels.
 - As of this version only debug configuration is available. If you would like to disable a specific feature, please request this as an enhancement on the issue tracker
 
-### PLANNED FEATURES
+### PLANNED FEATURES:
 I am currently evaluating the following features:
 - Settings to toggle template auto-targetting on/off
 - Settings for unskipping the roll configuration window by pressing a key

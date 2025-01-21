@@ -20,7 +20,7 @@ export const ROLL_TYPES = {
   damage: "damage",
   deathSave: "death",
   formula: "formula",
-  healing: "healing",
+  healing: "heal",
   custom: "roll",
   skillCheck: "skill",
   toolCheck: "tool"
