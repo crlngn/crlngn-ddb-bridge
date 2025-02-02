@@ -41,7 +41,6 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           
-          # Fetch all branches to ensure we can check out the correct one
           git fetch --all
 
           # Detect the default branch
@@ -97,11 +96,14 @@ jobs:
           FOUNDRY_PACKAGE_API_KEY: ${{ secrets.FOUNDRY_PACKAGE_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Fetching previous release from GitHub..."
-          PREV_RELEASE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/${{ github.repository }}/releases" | jq -r '[.[] | select(.tag_name != "v$VERSION")] | sort_by(.created_at) | reverse | .[0].tag_name')
+          echo "Fetching second latest release from GitHub..."
+          RELEASES=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/releases" | jq -r 'map(.tag_name) | sort_by(.) | reverse')
 
-          if [ -z "$PREV_RELEASE" ]; then
+          # Extract the second latest release (previous release)
+          PREV_RELEASE=$(echo "$RELEASES" | jq -r '.[1]')
+
+          if [ -z "$PREV_RELEASE" ] || [ "$PREV_RELEASE" == "null" ]; then
             echo "No previous release found. Skipping update."
             exit 0
           fi
