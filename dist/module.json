@@ -1,55 +1,58 @@
 {
-  "id": "crlngn-ddb-bridge",
-  "title": "Carolingian DDB Bridge",
-  "version": "1.1.1",
-  "description": "Adds DDB Gamelog support for DnD 4.x and streamlines roll functionality",
-  "url": "https://github.com/crlngn/crlngn-ddb-bridge",
-  "manifest": "https://github.com/crlngn/crlngn-ddb-bridge/releases/latest/download/module.json",
-  "download": "https://github.com/crlngn/crlngn-ddb-bridge/releases/download/v1.1.1/module.zip",
-  "bugs": "https://github.com/crlngn/crlngn-ddb-bridge/issues",
-  "readme": "https://github.com/crlngn/crlngn-ddb-bridge/main/README.md",
-  "license": "https://mit-license.org/",
-  "compatibility": {
-    "minimum": "12.328",
-    "verified": "12.331"
-  },
-  "author": "Carolingian",
-  "authors": [
-    {
-      "name": "Carolingian",
-      "url": "https://github.com/crlngn/crlngn-ddb-bridge"
-    }
-  ],
-  "relationships": {
-    "systems": [
+    "id": "crlngn-ddb-bridge",
+    "title": "Carolingian DDB Bridge",
+    "version": "1.1.3",
+    "description": "Adds DDB Gamelog support for DnD 4.x and streamlines roll functionality",
+    "url": "https://github.com/crlngn/crlngn-ddb-bridge",
+    "manifest": "https://github.com/crlngn/crlngn-ddb-bridge/releases/latest/download/module.json",
+    "download": "https://github.com/crlngn/crlngn-ddb-bridge/releases/latest/download/module.zip",
+    "bugs": "https://github.com/crlngn/crlngn-ddb-bridge/issues",
+    "readme": "https://github.com/crlngn/crlngn-ddb-bridge/main/README.md",
+    "license": "https://mit-license.org/",
+    "compatibility": {
+      "minimum": "12.328",
+      "verified": "12.331"
+    },
+    "authors": [
       {
-        "id": "dnd5e",
-        "type": "system",
-        "manifest": "https://raw.githubusercontent.com/foundryvtt/dnd5e/master/system.json",
-        "compatibility": {
-          "minimum": "4.0.3",
-          "verified": "4.1.2"
-        }
+        "name": "Carolingian",
+        "url": "https://github.com/crlngn/crlngn-ddb-bridge"
       }
     ],
-    "requires": [],
-    "recommends": [
-      {
-        "id": "ddb-game-log",
-        "type": "module",
-        "compatibility": {
-          "minimum": "2.2.0",
-          "verified": "2.3.2-beta"
+    "relationships": {
+      "systems": [
+        {
+          "id": "dnd5e",
+          "type": "system",
+          "manifest": "https://raw.githubusercontent.com/foundryvtt/dnd5e/master/system.json",
+          "compatibility": {
+            "minimum": "4.0.3",
+            "verified": "4.1.2"
+          }
         }
-      },
-      {
-        "id": "ddb-importer",
-        "type": "module",
-        "compatibility": {}
-      }
+      ],
+      "requires": [
+        
+      ],
+      "recommends": [
+        {
+          "id": "ddb-game-log",
+          "type": "module",
+          "compatibility": {
+            "minimum": "2.2.0",
+            "verified": "2.3.2-beta"
+          }
+        },
+        {
+          "id": "ddb-importer",
+          "type": "module",
+          "compatibility": {}
+        }
+      ]
+    },
+    "socket": false,
+    "esmodules": ["scripts/module.js"],
+    "styles": [
+      "styles/module.css"
     ]
-  },
-  "socket": false,
-  "esmodules": ["scripts/module.js"],
-  "styles": ["styles/module.css"]
 }
