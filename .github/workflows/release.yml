@@ -40,9 +40,17 @@ jobs:
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
+          
+          # Detect the default branch
+          DEFAULT_BRANCH=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
+          echo "Default branch detected: $DEFAULT_BRANCH"
+
+          # Switch to the default branch before committing
+          git checkout $DEFAULT_BRANCH
+
           git add README.md package.json
           git commit -m "Update README and package.json to version $VERSION" || echo "No changes to commit"
-          git push
+          git push origin $DEFAULT_BRANCH
 
       - name: Prepare Release Artifacts
         run: |
