@@ -1,11 +1,11 @@
 {
     "id": "crlngn-ddb-bridge",
     "title": "Carolingian DDB Bridge",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Adds DDB Gamelog support for DnD 4.x and streamlines roll functionality",
     "url": "https://github.com/crlngn/crlngn-ddb-bridge",
-    "manifest": "https://raw.githubusercontent.com/crlngn/crlngn-ddb-bridge/main/dist/module.json",
-    "download": "https://github.com/crlngn/crlngn-ddb-bridge/archive/refs/tags/v1.1.0.zip",
+    "manifest": "https://github.com/crlngn/crlngn-ddb-bridge/releases/latest/download/module.json",
+    "download": "https://github.com/crlngn/crlngn-ddb-bridge/releases/latest/download/module.zip",
     "bugs": "https://github.com/crlngn/crlngn-ddb-bridge/issues",
     "readme": "https://github.com/crlngn/crlngn-ddb-bridge/main/README.md",
     "license": "https://mit-license.org/",
@@ -13,7 +13,6 @@
       "minimum": "12.328",
       "verified": "12.331"
     },
-    "author": "Carolingian",
     "authors": [
       {
         "name": "Carolingian",

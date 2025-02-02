@@ -46,7 +46,7 @@ Chat card layout - start
 
 /* border - roll type */
 :is(.chat-popout, #chat-log, .chat-log) li.message:last-child:is(.roll),
-:is(.chat-popout, #chat-log, .chat-log) li.message:last-child:is(.custon) {
+:is(.chat-popout, #chat-log, .chat-log) li.message:last-child:is(.custom) {
   border: 2px solid #f5a623;
 }
 :is(.chat-popout, #chat-log, .chat-log) li.message:last-child:is(.attack) {
