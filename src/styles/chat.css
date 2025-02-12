@@ -131,9 +131,11 @@ Chat card layout - start
   font-family: "Roboto", Arial, sans-serif;
   display: none !important;
 }
+/*
 .message.crlngn .dnd5e2.chat-card .card-header.description:not(.collapsible){
   display: none;
 }
+*/
 
 /* content */
 .dnd5e2.chat-card,
