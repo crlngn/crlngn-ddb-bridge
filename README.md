@@ -41,7 +41,7 @@ While **Carolingian DDB Bridge module** is free to use and distribute, **DDB Gam
 
 ### BUGS AND FEATURE REQUESTS:
 - Please use the issue tracker to report any bugs and enhancements using the appropriate labels.
-- As of this version only debug configuration is available. If you would like to disable a specific feature, please request this as an enhancement on the issue tracker
+- If you would like to disable a specific feature, please request this as an enhancement on the issue tracker
 
 ### PLANNED FEATURES:
 I am currently evaluating the following features:
