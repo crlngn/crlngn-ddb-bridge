@@ -28,7 +28,7 @@ While **Carolingian DDB Bridge module** is free to use and distribute, **DDB Gam
 - This module is not compatible with versions of Foundry before v12 and DnD5e v4.0.x;
 
 ### FEATURES:
-- Support for activities in DnD 4.0.3 - 4.1.2 when rolling with DDB Gamelog module (from D&D Beyond website or app);
+- Support for activities in DnD 4.0.3 - 4.3.1 when rolling with DDB Gamelog module (from D&D Beyond website or app);
 - Support for JB2A / Automated Animations for spells and attacks;
 - Spells rolled from DDB which have templates will auto-trigger its template placement in Foundry;
 - The template auto-targets tokens in the area of placement;
@@ -45,8 +45,6 @@ While **Carolingian DDB Bridge module** is free to use and distribute, **DDB Gam
 
 ### PLANNED FEATURES:
 I am currently evaluating the following features:
-- Settings to toggle template auto-targetting on/off
-- Settings for unskipping the roll configuration window by pressing a key
 - Automatically rolling saves for NPCs / enemies
 - Adding custom rolls as bonuses to a previous roll from D&D Beyond (for example, for Bardic inspiration or Bless)
 - Retroactively changing a regular roll from D&D Beyond to advantage/disadvantage by clicking a button and waiting for the new roll
