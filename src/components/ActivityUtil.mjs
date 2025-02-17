@@ -19,7 +19,10 @@ export class ActivityUtil {
     const hasAttack = item.hasAttack;
     const hasSave = item.hasSave;
 
+    LogUtil.log("getActivityFromItem", [activities, typeof activities, Array.isArray(activities)]); 
+
     const activityByType = (type) => {
+      // const activityList = Object.values(activities);
       const activity = activities.find(act => { 
         return act.type == type;
       });
@@ -153,8 +156,10 @@ export class ActivityUtil {
     // Create chat message
     messageConfig.data.rolls = (messageConfig.data.rolls ?? []).concat(updates.rolls);
     results.message = await ActivityUtil.createUsageMessage(activity, messageConfig);
+
+    LogUtil.log("messageConfig", [ message, results.message]);
     results.message.dnd5e = messageConfig.flags?.dnd5e ?? {};
-    results.message.dnd5e.targets = GeneralUtil.getTargetDescriptors();
+    results.message.dnd5e.targets = GeneralUtil.getTargetDescriptors({ actorId: results.message.speaker.actor });
     results.message.flags = {
       ...results.message.flags, 
       rsr5e: { processed: true }
@@ -190,7 +195,7 @@ export class ActivityUtil {
       rolls: rollData
     }
     
-    // LogUtil.log("createUsageMessage", [context, rollData]); 
+    LogUtil.log("createUsageMessage", [activity.metadata.usage.chatCard, context]); 
 
     const messageConfig = foundry.utils.mergeObject({
       rollMode: game.settings.get("core", "rollMode"),

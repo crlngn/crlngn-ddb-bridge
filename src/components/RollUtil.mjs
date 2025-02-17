@@ -9,20 +9,35 @@ import { SETTINGS } from "../constants/Settings.mjs";
 import { Main } from "./Main.mjs";
 
 export class RollUtil{
-  // 
-  static streamlineDDBRoll = async (ddbglCls, item, actionName, msg, msgData) => {
+  // ddbglCls, itemId, actionName, msg, msgConfig
+  static streamlineDDBRoll = async (ddbglCls, itemId, actionName, msg, msgData) => {
     let selectedActivity = null, castActivity = null;
+    let user = game.user;
+    let item = actionName ? GeneralUtil.findItemFromActor(msgData.speaker.actor, itemId, actionName) : null;
 
-    LogUtil.log("streamlineDDBRoll", [ddbglCls, item, {...msg}, msgData]); 
+    msg.rolls = msg.rolls.map(rollData => Roll.fromJSON(rollData));
+    LogUtil.log("streamlineDDBRoll A", [ddbglCls, itemId, actionName, msg, msgData]); 
+    LogUtil.log("TEST REBUILD", [...msg.rolls]);
     let config = {}, originalRoll = msg.rolls[0];
 
+    config.message = {
+      flavor: msg.flavor,
+      speaker: msg.speaker,
+      whisper: msg.whisper,
+      user: user,
+      blind: msg.blind || GeneralUtil.isPrivateRoll(msgData.rollMode),
+      rollMode: msgData.rollMode
+    }
+
     config.dialog = {
-      configure: true // RollUtil.#getDialogSetting(msg) || true
+      configure: true
     }; 
+    LogUtil.log("streamlineDDBRoll B", [config]); 
 
     config.roll = {
       formula: originalRoll.formula,
       consume: { resources: false, spellSlot: false },
+      user: user,
       rolls: [],
       flags: {
         ...msg.flags, 
@@ -35,20 +50,13 @@ export class RollUtil{
       }
     };
     msg.flags = config.roll.flags;
-
-    config.message = {
-      flavor: msg.flavor,
-      speaker: msg.speaker,
-      whisper: msg.whisper,
-      user: game.user,
-      blind: msg.blind || GeneralUtil.isPrivateRoll(msgData.rollMode),
-      rollMode: msgData.rollMode
-    }
+    LogUtil.log("streamlineDDBRoll C", [ddbglCls===DDBGL_CLS.toHit.cls, ddbglCls, DDBGL_CLS.toHit.cls, config]); 
 
     try{
       switch(true){ 
         case ddbglCls===DDBGL_CLS.toHit.cls: // is attack roll
           selectedActivity = ActivityUtil.getActivityFromItem(item, ddbglCls) ?? null; 
+          LogUtil.log("streamlineDDBRoll D", [item, ddbglCls, selectedActivity]); 
           await RollUtil.triggerAttack(selectedActivity, msg, msgData, config);
           
           break; 
@@ -78,8 +86,8 @@ export class RollUtil{
           // 
       } 
     }catch(e){ 
-      LogUtil.error("Error intercepting DDB roll", [e, ddbglCls, item, msg, msgData]);
-      // ui.notifications.warn("Could not intercept the DDB roll. Please check if 'description cards' are enabled on DDB Gamelog config options");
+      LogUtil.error("Error intercepting DDB roll", [e], { ui:false, console:true, permanent:false });
+      ui.notifications.warn("Could not intercept the DDB roll");
       return false; 
     }
     return true;
@@ -99,7 +107,7 @@ export class RollUtil{
 
     // config specific to attack rolls
     config.roll.flags.rsr5e = { processed: true  };
-    config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors(); 
+    config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user}); 
     config.roll.flags.dnd5e.roll = { type: ROLL_TYPES.attack }; 
     // config.roll.flags.dnd5e.activity = {
     //   ...config.roll.flags.dnd5e.activity,
@@ -107,7 +115,14 @@ export class RollUtil{
     // }
     // config.message.flags = config.roll.flags;
 
-    let activityRolls = await selectedActivity.rollAttack(config.roll, config.dialog, { create: false });
+    LogUtil.log("triggerAttack", [config, selectedActivity]);
+
+    let activityRolls = await selectedActivity.rollAttack(config.roll, config.dialog, { 
+      create: false,
+      data: {
+        ...config.message 
+      }
+    });
     if(activityRolls.length < 1){ return; }
 
     // copy terms from the original roll and recalculate
@@ -117,11 +132,13 @@ export class RollUtil{
     const oldTemplate = selectedActivity.metadata.usage.chatCard;
     selectedActivity.metadata.usage.chatCard = `modules/${MODULE_SHORT}/templates/ddb-attack-info.hbs`;
 
+    // usageResults.message.user = config.message.user;
     usageResults = await ActivityUtil.ddbglUse(selectedActivity, config.roll, config.dialog, { 
       create: false,
       data: { 
         rollMsg: msg.content, 
         rolls: activityRolls,
+        user: config.message.user,
         speaker: config.message.speaker,
         flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
                     `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`,
@@ -138,13 +155,14 @@ export class RollUtil{
       }
     });
     usageResults.message.rolls = activityRolls;
-
-    usageResults.message.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors();
+    usageResults.message.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user});
     usageResults.message.flags = usageResults.message.flags ?? {};
 
-    LogUtil.log("USAGE RESULTS", [usageResults]);
+    LogUtil.log("USAGE RESULTS", [usageResults, config.message, selectedActivity.metadata]);
 
     await ChatMessage5e.create(usageResults.message, {rollMode: msgData.rollMode });
+    // await ChatMessage5e.create(usageResults.message, {rollMode: msgData.rollMode });
+    // await activityRolls[0].toMessage(config.message, {rollMode: msgData.rollMode });
 
     // set the template back to normal
     selectedActivity.metadata.usage.chatCard = oldTemplate;
@@ -172,6 +190,7 @@ export class RollUtil{
       });
       await ChatMessage5e.create(usageResults.message, {rollMode: msgData.rollMode }); 
     }
+    LogUtil.log("triggerDamage", [config, selectedActivity])
 
     let activityRolls = await selectedActivity.rollDamage(config.roll, config.dialog, { 
       create: false, // data: { flags: config.message.flags }   
@@ -191,7 +210,7 @@ export class RollUtil{
       quickRoll: false
     }
 
-    config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors();
+    config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user});
     config.roll.flags.dnd5e.roll = { type: ROLL_TYPES.damage }; 
     config.message.flags = config.roll.flags;
     config.message.flags = {
@@ -204,10 +223,10 @@ export class RollUtil{
     await activityRolls[0].toMessage(config.message, {rollMode: msgData.rollMode });
     
     if(!selectedActivity.attack){
-      game.user.targets.forEach(token => { 
-        if(token.actor.testUserPermission(game.user, "OWNER")){ 
-          token.control({releaseOthers: false})
-        } 
+      config.message.user.targets.forEach(token => { 
+        // if(token.actor.testUserPermission(config.message.user, "OWNER")){ 
+        token.control({releaseOthers: false})
+        // } 
       }); 
     }
     setTimeout(() => {
@@ -240,7 +259,7 @@ export class RollUtil{
       }; 
     }
     config.message.flags = {
-      ...config.message,
+      // ...config.message,
       dnd5e: config.roll.flags.dnd5e,
       rsr5e: config.roll.flags.rsr5e
     };
@@ -301,7 +320,7 @@ export class RollUtil{
 
     // config specific to damage rolls
     config.roll.flags.dnd5e.roll = { type: ROLL_TYPES.healing };
-    config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors();
+    config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user});
     // config.message.flags = config.roll.flags;
     config.message.flags = {
       ...config.message,
@@ -373,42 +392,5 @@ export class RollUtil{
       }
     }
   
-    
   }
 }
-
-/*
-// First attempt at getting compatibility with Midi-QOL
-// This attempt didn't break midi, but animations dont work and
-// dice are rolled twice
-if(Main.isMidiOn){
-  wf = new MidiQOL.Workflow(
-    selectedActivity.actor, 
-    selectedActivity, 
-    msgData.speaker, 
-    GeneralUtil.getTargets(), 
-    { 
-      // advantage: false,
-      // disadvantage: false,
-      fastForward: true, 
-      fastForwardSet: true, 
-      // parts: undefined,
-      // chatMessage: undefined, 
-      // rollToggle: undefined, 
-      // other: undefined, 
-      versatile: undefined, 
-      isCritical: msg.rolls[0]?.d20?.total == 20, 
-      autoRollAttack: false, 
-      autoRollDamage: false, 
-      fastForwardAttack: true, 
-      fastForwardDamage: true, 
-      fastForwardAbility: true, 
-      // ...config.midiOptions,
-      //  event: config.event 
-    }
-  );
-  wf.diceRoll = msg.rolls[0]?.d20?.total;
-  wf.noAutoAttack = true;
-}
-LogUtil.log("MIDI ATTACK WF", [wf])
-*/

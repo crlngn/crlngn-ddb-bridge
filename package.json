@@ -1,15 +1,18 @@
 {
   "name": "crlngn-ddb-bridge",
-  "version": "1.1.4",
+  "version": "2.0.0",
   "description": "A companion module for improving rolls on FoundryVTT and DnD5e",
   "license": "MIT",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "watch": "watch 'npm run build' ./src",
+    "watch": "WATCH_MODE=true watch 'npm run build' ./src",
     "createSymlinks": "node ./tools/create-symlinks.mjs",
     "postinstall": "npm run createSymlinks",
+    "bump": "npm version patch --no-git-tag-version && git add package.json ./src/module.json README.md && npm run build",
+    "bump:minor": "npm version minor --no-git-tag-version && git add package.json ./src/module.json README.md && npm run build",
+    "bump:major": "npm version major --no-git-tag-version && git add package.json ./src/module.json README.md && npm run build",
     "tsc": "tsc"
   },
   "devDependencies": {

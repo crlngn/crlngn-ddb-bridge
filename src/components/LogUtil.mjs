@@ -33,12 +33,12 @@ export class LogUtil {
      * @param {string} strRef - Reference string for the error. 
      * @param {object} options - 
      */
-    static error(strRef, options){ // = { ui:false, console:true, permanent:false }) {
+    static error(strRef, data=[], options={ ui:false, console:true, permanent:false }){ // = { ui:false, console:true, permanent:false }) {
         if(options.ui){
             // console.log(ui.notifications);
             ui.notifications?.error(strRef, { localize: true, permanent: options.permanent });
         }
-        if(options.console) console.error(...DEBUG_TAG, strRef);
+        if(options.console) console.error(...DEBUG_TAG, strRef, ...data);
     }
 }
 

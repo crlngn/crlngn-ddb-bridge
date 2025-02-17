@@ -8,6 +8,7 @@ import { GeneralUtil } from "./GeneralUtil.mjs";
 import { LogUtil } from "./LogUtil.mjs";
 import { RollUtil } from "./RollUtil.mjs";
 import { SettingsUtil } from "./SettingsUtil.mjs";
+import { SocketUtil } from "./SocketUtil.mjs";
 
 export class Main {
   static keysPressed = [];
@@ -19,7 +20,9 @@ export class Main {
   }
 
   static registerHooks(){
-
+    SocketUtil.initialize(() => {
+      LogUtil.log("SocketUtil - initialized with socket", [SocketUtil.socket]);
+    });
     Hooks.once(HOOKS_CORE.INIT,()=>{
       Main.isMidiOn = GeneralUtil.isModuleOn("midi-qol");
       LogUtil.log("Initiating module", [], true);
@@ -31,13 +34,28 @@ export class Main {
     })
 
     Hooks.once(HOOKS_CORE.READY, () => { 
+      // Check if Foundry has socket support enabled
+      if (!game.socket) {
+        ui.notifications.error("⚠️ DDB Bridge: Foundry needs to be restarted to enable socket functionality.", { permanent: true });
+        LogUtil.error("Foundry restart required to enable sockets.");
+        return;
+      }
+
       SettingsUtil.registerSettings();
       SettingsUtil.resetGamelogSettings();
+      Main.registerSocketFunction();
     });
 
     Hooks.on(HOOKS_CORE.CLOSE_SETTINGS_CONFIG, () => {
       SettingsUtil.resetGamelogSettings();
     })
+  }
+
+  /**
+   * 
+   */
+  static registerSocketFunction(){
+    SocketUtil.registerCall('DDBRoll', RollUtil.streamlineDDBRoll);
   }
 
   /**
@@ -85,7 +103,7 @@ export class Main {
       if(index < 0){
         Main.keysPressed.push(keyPressed);
       }
-      LogUtil.log("Keydown", [Main.keysPressed]);
+      // LogUtil.log("Keydown", [Main.keysPressed]);
     });
 
     // Listen to keyup event and remove keys
@@ -96,7 +114,7 @@ export class Main {
       if(index >= 0){
         Main.keysPressed.splice(index,1);
       }
-      LogUtil.log("Keyup", [Main.keysPressed]); 
+      // LogUtil.log("Keyup", [Main.keysPressed]); 
     });
   }
 
@@ -176,15 +194,16 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
         msg.flags[MODULE_SHORT].processed = true;
         isProcessed = true;
       }
+      const flavorElem = document.createElement("div");
+      flavorElem.innerHTML = msgConfig.flavor;
+      let actionName = flavorElem?.querySelector("span:first-child")?.innerHTML.replace(":","");
 
+      item = actionName ? GeneralUtil.findItemFromActor(msgConfig.speaker.actor, itemId, actionName) : null;
+/*
       item = itemId ? actor.items.find((it) => {
         // LogUtil.log("item",[it]); 
         return it.id === itemId; 
       }) : null; 
-      
-      const flavorElem = document.createElement("div");
-      flavorElem.innerHTML = msgConfig.flavor;
-      let actionName = flavorElem?.querySelector("span:first-child")?.innerHTML.replace(":","");
 
       if(!item){ 
         // match exact name
@@ -192,15 +211,26 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
         // if no exact name, look for the name with "(Legacy)" tag
         if(!item){ item = actor.items.find((it) => it.name.toLowerCase() === (actionName + " (Legacy)").toLowerCase()) };
       } 
-      
+*/
       if(!item && 
-        (ddbglCls === DDBGL_CLS.toHit.cls || 
-        ddbglCls === DDBGL_CLS.damage.cls || 
-        ddbglCls === DDBGL_CLS.heal.cls)){ 
-        LogUtil.error("Could not find an item for the roll", [ddbglCls, actor.items]);
-        return true;
+        ( ddbglCls === DDBGL_CLS.toHit.cls || 
+          ddbglCls === DDBGL_CLS.damage.cls || 
+          ddbglCls === DDBGL_CLS.heal.cls) ){ 
+        LogUtil.error("Could not find an item for the roll", [ddbglCls, actionName, actor.items]);
+        return true; 
       }else{
-        RollUtil.streamlineDDBRoll(ddbglCls, item, actionName, msg, msgConfig);
+        // destructure the roll before sending via socket
+        msg.rolls = msg.rolls.map(roll => JSON.stringify(roll.toJSON()));
+        const user = GeneralUtil.getUserFromActor(msg.speaker?.actor);
+        const playerMakesRoll = SettingsUtil.get(SETTINGS.ddbRollOwnership.tag) == 2;
+
+        LogUtil.log("playerMakesRoll", [SettingsUtil.get(SETTINGS.ddbRollOwnership.tag)]);
+        if(user && playerMakesRoll){
+          SocketUtil.execAsUser('DDBRoll', user.id, ddbglCls, itemId, actionName, msg, msgConfig); 
+        }else{
+          RollUtil.streamlineDDBRoll(ddbglCls, itemId, actionName, msg, msgConfig);
+          //ddbglCls, item, actionName, msg, msgConfig); 
+        }
       }
     }else{ 
       LogUtil.warn("Could not find the actor from DDB Gamelog roll");

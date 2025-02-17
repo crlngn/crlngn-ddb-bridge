@@ -1,4 +1,5 @@
 <div class="dnd5e2 crlngn chat-card activation-card">
+  
     <section class="card-header description collapsible collapsed">
         <header class="summary">
             <img class="gold-icon" src="{{ item.img }}" alt="{{ item.name }}">
@@ -12,9 +13,13 @@
         </header>
 
         {{!-- Details --}}
+        {{!-- {{#if description }}
         <section class="details collapsible-content card-content">
-          <div class="wrapper">{{{ description }}}</div>
+          <div class="wrapper">
+            {{{ description }}}
+            </div>
         </section>
+        {{/if}} --}}
     </section>
 
     {{!-- Roll info--}}

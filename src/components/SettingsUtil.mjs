@@ -19,16 +19,21 @@ export class SettingsUtil {
         const setting = entry[1]; 
         LogUtil.log("Registering... ",[entry]);
 
-        await game.settings.register(MODULE_ID, setting.tag, {
+        const settingObj = { 
           name: setting.label,
           hint: setting.hint,
           default: setting.default,
           type: setting.propType,
-          choices: setting.choices || null,
           scope: setting.scope,
           config: setting.config,
+          requiresReload: setting.requiresReload || false,
           onChange: value => SettingsUtil.apply(setting.tag, value)
-        });
+        }
+        if(setting.choices){
+          settingObj.choices = setting.choices;
+        }
+
+        await game.settings.register(MODULE_ID, setting.tag, settingObj);
 
         /* if the setting has never been defined, set as default value */
         if(SettingsUtil.get(setting.tag)===undefined){
@@ -36,6 +41,11 @@ export class SettingsUtil {
         }
         LogUtil.log("registerSettings",[setting.tag, SettingsUtil.get(setting.tag)]);
       });
+
+      // apply chat style settings
+      if(SettingsUtil.get(SETTINGS.enableChatStyles.tag)){ 
+        document.querySelector("body").classList.add("crlngn-chat"); 
+      }
       
     }
 
@@ -114,7 +124,7 @@ export class SettingsUtil {
       if(!isDDBGLOn){ return; }
 
       const itemDescriptionsOn = SettingsUtil.get("enable_chatcards", "ddb-game-log");
-      const forceSettingsOn = SettingsUtil.get("force-ddbgl-settings");
+      const forceSettingsOn = SettingsUtil.get(SETTINGS.forceDDBGL.tag);
 
       LogUtil.log("resetGamelogSettings", [itemDescriptionsOn, forceSettingsOn])
 

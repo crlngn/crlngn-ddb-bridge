@@ -2,10 +2,25 @@
 import copy from "rollup-plugin-copy";
 // @ts-nocheck
 import { defineConfig } from "vite";
+import path from "path";
+import vitePluginVersion from './vite-plugin-version.js';
+
+import { readFileSync } from 'fs';
+const packageJson = JSON.parse(readFileSync('./package.json', 'utf-8'));
+const version = packageJson.version;
 
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(version),
+  },
+  base: '/modules/crlngn-ui/',
   css: {
     devSourcemap: true,
+  },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src")
+    }
   },
   build: {
     sourcemap: true,
@@ -15,11 +30,12 @@ export default defineConfig({
         dir: "dist/",
         entryFileNames:"scripts/module.js",
         assetFileNames: (assetInfo) => {
-          const isImgType = assetInfo.names?.filter(n=>/\.(gif|jpe?g|png|svg)$/.test(n)).length > 0;
-          const isStyleType = assetInfo.names?.filter(n=>/\.css$/.test(n)).length > 0;
+          const isImgType = /\.(gif|jpe?g|png|svg)$/.test(assetInfo.name);
+          const isStyleType = /\.css$/.test(assetInfo.name);
 
           if (isImgType){
-              return 'assets/images/[name][extname]';
+            return 'assets/[name][extname]';
+            // return '[name][extname]';
           }
           if (isStyleType) {
             return 'styles/[name][extname]';   
@@ -35,10 +51,12 @@ export default defineConfig({
     },
   },
  plugins: [
+  vitePluginVersion(),
   copy({
     targets: [
       { src: "src/module.json", dest: "dist" },
-      { src: "src/templates", dest: "dist" }
+      { src: "src/templates", dest: "dist" },
+      { src: "src/lang", dest: "dist" }
     ],
     hook: "writeBundle",
   })

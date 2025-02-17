@@ -75,7 +75,17 @@ export const HOOKS_DND5E ={
 
 }
 
+/**
+ * D&D Gamelog Hooks
+ */
 export const HOOKS_DDBGL = {
   PENDING_ROLL: "ddb-game-log.pendingRoll",
   FULFILLED_ROLL: "ddb-game-log.fulfilledRoll"
+}
+
+/**
+ * Socketlib hooks
+ */
+export const HOOKS_SOCKET = {
+  READY: "socketlib.ready"
 }

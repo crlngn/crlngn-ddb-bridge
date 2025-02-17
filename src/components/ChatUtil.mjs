@@ -6,28 +6,31 @@ export class ChatUtil {
 
   static enrichCard(chatMessage, html){
     const rollType = chatMessage.flags?.dnd5e?.activity?.type || chatMessage.flags?.dnd5e?.roll?.type || "custom";
-  
     html.classList.remove('ddb-game-log-open-card');
     html.classList.add('crlngn');
     html.classList.add(rollType);
     
 
-    let senderSubtitle = html.querySelector(".message-sender .subtitle");
-    let senderFlavor = html.querySelector(".message-sender .flavor-text");
-    let headerFlavor = html.querySelector(".message-header .flavor-text");
+    // let senderSubtitle = html.querySelector(".message-sender .subtitle");
+    // let senderFlavor = html.querySelector(".message-sender .flavor-text");
+    // let headerFlavor = html.querySelector(".message-header .flavor-text");
+    /*
+    // replace author subtitle with flavor text
     if(!chatMessage.flags?.["ddb-game-log"]){
-      /** replace author subtitle with flavor text, for space optimization */
       const flavorText = headerFlavor?.innerHTML;
       if(flavorText){
         if(senderSubtitle) senderSubtitle.innerHTML = flavorText;
-        if(senderFlavor) senderFlavor.innerHTML = flavorText;
+        if(senderFlavor && !senderFlavor.innerHTML) senderFlavor.innerHTML = flavorText;
       }else{
         if(senderSubtitle) senderSubtitle.innerHTML = "Message";
       }
       
       senderSubtitle.innerHTML = ChatUtil.formatFlavorText(senderSubtitle.innerHTML, chatMessage, rollType);
-    }
+    }*/
     
+    if(chatMessage.flags?.["ddb-game-log"]){
+      html.classList.add('ddbgl');
+    }
   }
 
   /**
