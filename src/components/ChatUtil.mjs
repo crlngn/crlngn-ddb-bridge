@@ -1,33 +1,32 @@
 import { ROLL_TYPES } from "../constants/General.mjs";
+import { getSettings } from "../constants/Settings.mjs";
 import "../styles/chat.css"
 import { LogUtil } from "./LogUtil.mjs";
+import { SettingsUtil } from "./SettingsUtil.mjs";
 
 export class ChatUtil {
 
   static enrichCard(chatMessage, html){
-    const rollType = chatMessage.flags?.dnd5e?.activity?.type || chatMessage.flags?.dnd5e?.roll?.type || "custom";
+    const SETTINGS = getSettings();
     html.classList.remove('ddb-game-log-open-card');
-    html.classList.add('crlngn');
-    html.classList.add(rollType);
-    
+  
+    if(SettingsUtil.get(SETTINGS.enableChatStyles.tag)){ 
+      const rollType = chatMessage.flags?.dnd5e?.activity?.type || chatMessage.flags?.dnd5e?.roll?.type || "custom";
+      let elem = html.get ? html.get(0) : html;
 
-    // let senderSubtitle = html.querySelector(".message-sender .subtitle");
-    // let senderFlavor = html.querySelector(".message-sender .flavor-text");
-    // let headerFlavor = html.querySelector(".message-header .flavor-text");
-    /*
-    // replace author subtitle with flavor text
-    if(!chatMessage.flags?.["ddb-game-log"]){
-      const flavorText = headerFlavor?.innerHTML;
-      if(flavorText){
-        if(senderSubtitle) senderSubtitle.innerHTML = flavorText;
-        if(senderFlavor && !senderFlavor.innerHTML) senderFlavor.innerHTML = flavorText;
-      }else{
-        if(senderSubtitle) senderSubtitle.innerHTML = "Message";
-      }
-      
-      senderSubtitle.innerHTML = ChatUtil.formatFlavorText(senderSubtitle.innerHTML, chatMessage, rollType);
-    }*/
-    
+      const locBtnPath = 'CRLNGN_UI.dnd5e.chatCard.buttons';
+      elem.style.setProperty('--crlngn-i18n-attack', game.i18n.localize(`${locBtnPath}.attack`));
+      elem.style.setProperty('--crlngn-i18n-damage', game.i18n.localize(`${locBtnPath}.damage`));
+      elem.style.setProperty('--crlngn-i18n-summons', game.i18n.localize(`${locBtnPath}.summons`));
+      elem.style.setProperty('--crlngn-i18n-healing', game.i18n.localize(`${locBtnPath}.healing`));
+      elem.style.setProperty('--crlngn-i18n-template', game.i18n.localize(`${locBtnPath}.template`));
+      elem.style.setProperty('--crlngn-i18n-consume', game.i18n.localize(`${locBtnPath}.consume`));
+      elem.style.setProperty('--crlngn-i18n-refund', game.i18n.localize(`${locBtnPath}.refund`));
+      elem.style.setProperty('--crlngn-i18n-macro', game.i18n.localize(`${locBtnPath}.macro`));
+      elem.style.setProperty('--crlngn-i18n-save-dc', game.i18n.localize(`${locBtnPath}.savedc`));
+      elem.classList.add('crlngn');
+      elem.classList.add(rollType);      
+    }    
     if(chatMessage.flags?.["ddb-game-log"]){
       html.classList.add('ddbgl');
     }

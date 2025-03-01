@@ -2,7 +2,7 @@ import { DDBGL_CLS } from "../constants/DDBGL.mjs";
 import { MODULE_SHORT } from "../constants/General.mjs";
 
 import { HOOKS_CORE, HOOKS_DND5E } from "../constants/Hooks.mjs";
-import { SETTINGS } from "../constants/Settings.mjs";
+import { getSettings } from "../constants/Settings.mjs";
 import { ChatUtil } from "./ChatUtil.mjs";
 import { GeneralUtil } from "./GeneralUtil.mjs";
 import { LogUtil } from "./LogUtil.mjs";
@@ -13,6 +13,7 @@ import { SocketUtil } from "./SocketUtil.mjs";
 export class Main {
   static keysPressed = [];
   static isMidiOn = false;
+  static areKeysPressed;
 
   static init(){
     Main.setupKeyListeners();
@@ -21,12 +22,15 @@ export class Main {
 
   static registerHooks(){
     SocketUtil.initialize(() => {
-      LogUtil.log("SocketUtil - initialized with socket", [SocketUtil.socket]);
+      LogUtil.log("SocketUtil - initialized with socket", [SocketUtil.socket, game.system.utils.areKeysPressed]);
+      // Main.areKeysPressed = game.system.utils.areKeysPressed;
     });
     Hooks.once(HOOKS_CORE.INIT,()=>{
       Main.isMidiOn = GeneralUtil.isModuleOn("midi-qol");
       LogUtil.log("Initiating module", [], true);
+      document.querySelector("body").classList.add("crlngn-chat"); //add here for better rendering, remove later if needed
       
+      SettingsUtil.registerSettings();
       Main.registerActivityHooks();
       Main.registerRollHooks();
       Main.registerChatHooks();
@@ -41,7 +45,6 @@ export class Main {
         return;
       }
 
-      SettingsUtil.registerSettings();
       SettingsUtil.resetGamelogSettings();
       Main.registerSocketFunction();
     });
@@ -169,6 +172,7 @@ const onPostUseActivity = async(
  * @returns {Boolean}
  */
 const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
+  const SETTINGS = getSettings();
   let isDDBGL = false;
   let actor, ddbglCls, itemId, item, isProcessed=false;
   

@@ -1,6 +1,6 @@
 import { MODULE_ID, MODULE_SHORT } from "../constants/General.mjs";
 // import { HOOKS_CORE } from "../constants/Hooks.mjs";
-import { SETTINGS } from "../constants/Settings.mjs";
+import { getSettings } from "../constants/Settings.mjs";
 import { GeneralUtil } from "./GeneralUtil.mjs";
 import { LogUtil } from "./LogUtil.mjs";
 
@@ -9,6 +9,7 @@ export class SettingsUtil {
      * Registers settings for this module
      */
     static registerSettings(){
+      const SETTINGS = getSettings();
       document.querySelector("body").classList.add(MODULE_SHORT); 
       
       /**
@@ -43,8 +44,8 @@ export class SettingsUtil {
       });
 
       // apply chat style settings
-      if(SettingsUtil.get(SETTINGS.enableChatStyles.tag)){ 
-        document.querySelector("body").classList.add("crlngn-chat"); 
+      if(!SettingsUtil.get(SETTINGS.enableChatStyles.tag)){ 
+        document.querySelector("body").classList.remove("crlngn-chat"); 
       }
       
     }
@@ -110,6 +111,7 @@ export class SettingsUtil {
      * Apply current setting for Text Size
      */
     static apply(settingTag, value){
+      const SETTINGS = getSettings();
       switch(settingTag){
         case SETTINGS.forceDDBGL.tag:
           SettingsUtil.resetGamelogSettings();
@@ -120,6 +122,7 @@ export class SettingsUtil {
     }
 
     static resetGamelogSettings(){
+      const SETTINGS = getSettings();
       const isDDBGLOn = GeneralUtil.isModuleOn("ddb-game-log");
       if(!isDDBGLOn){ return; }
 

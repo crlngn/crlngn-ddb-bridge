@@ -35,7 +35,7 @@ export class SocketUtil {
 
             LogUtil.log(`SocketUtil | Module registered`, [SocketUtil.socket]);
           } catch (e) {
-              LogUtil.log(`Problem registering module`, e);
+              LogUtil.log(`Problem registering module`, [e]);
           }
         });
     }

@@ -5,7 +5,7 @@ import { DDBGL_CLS } from "../constants/DDBGL.mjs";
 import { MODULE_SHORT, ROLL_TYPES } from "../constants/General.mjs";
 import ChatMessage5e from "../../dnd5e/module/documents/chat-message.mjs";
 import { SettingsUtil } from "./SettingsUtil.mjs";
-import { SETTINGS } from "../constants/Settings.mjs";
+import { getSettings } from "../constants/Settings.mjs";
 import { Main } from "./Main.mjs";
 
 export class RollUtil{
@@ -16,8 +16,7 @@ export class RollUtil{
     let item = actionName ? GeneralUtil.findItemFromActor(msgData.speaker.actor, itemId, actionName) : null;
 
     msg.rolls = msg.rolls.map(rollData => Roll.fromJSON(rollData));
-    LogUtil.log("streamlineDDBRoll A", [ddbglCls, itemId, actionName, msg, msgData]); 
-    LogUtil.log("TEST REBUILD", [...msg.rolls]);
+    
     let config = {}, originalRoll = msg.rolls[0];
 
     config.message = {
@@ -30,9 +29,8 @@ export class RollUtil{
     }
 
     config.dialog = {
-      configure: true
+      configure: false
     }; 
-    LogUtil.log("streamlineDDBRoll B", [config]); 
 
     config.roll = {
       formula: originalRoll.formula,
@@ -50,13 +48,10 @@ export class RollUtil{
       }
     };
     msg.flags = config.roll.flags;
-    LogUtil.log("streamlineDDBRoll C", [ddbglCls===DDBGL_CLS.toHit.cls, ddbglCls, DDBGL_CLS.toHit.cls, config]); 
-
     try{
       switch(true){ 
         case ddbglCls===DDBGL_CLS.toHit.cls: // is attack roll
           selectedActivity = ActivityUtil.getActivityFromItem(item, ddbglCls) ?? null; 
-          LogUtil.log("streamlineDDBRoll D", [item, ddbglCls, selectedActivity]); 
           await RollUtil.triggerAttack(selectedActivity, msg, msgData, config);
           
           break; 
@@ -102,71 +97,306 @@ export class RollUtil{
    * @returns 
    */
   static triggerAttack  = async(selectedActivity, msg, msgData, config) => {
-    let usageResults;
+    const SETTINGS = getSettings();
+    let usageResults, activityRolls, workflow;
+    let oldTemplate;
     if(!selectedActivity){ throw new Error('No associated activity found.') }
 
     // config specific to attack rolls
     config.roll.flags.rsr5e = { processed: true  };
     config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user}); 
     config.roll.flags.dnd5e.roll = { type: ROLL_TYPES.attack }; 
-    // config.roll.flags.dnd5e.activity = {
-    //   ...config.roll.flags.dnd5e.activity,
-    //   type: ROLL_TYPES.attack
-    // }
-    // config.message.flags = config.roll.flags;
 
     LogUtil.log("triggerAttack", [config, selectedActivity]);
+    // return;
+    const isMidiOn = GeneralUtil.isModuleOn("midi-qol");
+    LogUtil.log("triggerAttack - isMidiOn", [isMidiOn, selectedActivity, usageResults]);
+    if(isMidiOn){
+      // // set the template for the chat message
+      // oldTemplate = selectedActivity.metadata.usage.chatCard;
+      // selectedActivity.metadata.usage.chatCard = `modules/${MODULE_SHORT}/templates/ddb-attack-info.hbs`;
+      // workflow = new MidiQOL.Workflow(selectedActivity.actor, selectedActivity, msg.speaker, config.message.user.targets, 
+      //   { 
+      //     // rolls: msg.rolls,
+      //     // itemCardUuid: usageResults.message.uuid,
+      //     // itemCardId: usageResults.message.id,
+      //     // showCard: false
+      //   }
+      // ); 
+      const workflow = new MidiQOL.Workflow(selectedActivity.actor, selectedActivity, msg.speaker, config.message.user.targets, { 
+        workflowOptions: { attackRollDSN: false }
+      });
 
-    let activityRolls = await selectedActivity.rollAttack(config.roll, config.dialog, { 
-      create: false,
-      data: {
-        ...config.message 
+      activityRolls = await selectedActivity.rollAttack({
+        ...config.roll,
+        midiOptions: {
+          workflowOptions: { attackRollDSN: false }
+        }
+      }, 
+      config.dialog, 
+      { 
+        create: false,
+        data: {
+          ...config.message 
+        }
+      });
+
+      if(activityRolls.length < 1){ return; }
+      
+      // copy terms from the original roll and recalculate
+      if(SettingsUtil.get(SETTINGS.foundryRollModifiers.tag)){
+        RollUtil.replaceDie(activityRolls[0], msg.rolls[0]);
+      }else{
+        RollUtil.replaceTerms(activityRolls[0], msg.rolls[0]);
       }
-    });
-    if(activityRolls.length < 1){ return; }
 
-    // copy terms from the original roll and recalculate
-    RollUtil.replaceTerms(activityRolls[0], msg.rolls[0]);
-
-    // set the template for the chat message
-    const oldTemplate = selectedActivity.metadata.usage.chatCard;
-    selectedActivity.metadata.usage.chatCard = `modules/${MODULE_SHORT}/templates/ddb-attack-info.hbs`;
-
-    // usageResults.message.user = config.message.user;
-    usageResults = await ActivityUtil.ddbglUse(selectedActivity, config.roll, config.dialog, { 
-      create: false,
-      data: { 
-        rollMsg: msg.content, 
-        rolls: activityRolls,
-        user: config.message.user,
-        speaker: config.message.speaker,
-        flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
-                    `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`,
-        flags: {
-          rsr5e: config.roll.flags.rsr5e,
-          [MODULE_SHORT]: { 
-            processed: true, 
-            rollMode: msgData.rollMode,
-            cls: msg.flags["ddb-game-log"].cls,
-            flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
-                    `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`
+      usageResults = await selectedActivity.use({
+        ...config.roll,
+        // midiOptions: {
+        //   workflowOptions: { attackRollDSN: true }
+        // }
+      }, config.dialog, { 
+        create: true,
+        data: { 
+          // rollMsg: msg.content, 
+          rolls: [activityRolls[0]],
+          user: config.message.user,
+          speaker: config.message.speaker,
+          flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
+                      `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`,
+          flags: {
+            rsr5e: config.roll.flags.rsr5e,
+            [MODULE_SHORT]: { 
+              processed: true, 
+              data: { msg, msgData },
+              rollMode: msgData.rollMode,
+              cls: msg.flags["ddb-game-log"].cls,
+              flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
+                      `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`
+            }
           }
         }
+      });
+      workflow.setAttackRoll(activityRolls[0]);
+
+      /*
+      usageResults = await selectedActivity.use({
+        ...config.roll,
+        midiOptions: {
+          workflowOptions: { attackRollDSN: false }
+        }
+      }, { configure:false }, { 
+        create: true,
+        data: { 
+          rollMsg: msg.content, 
+          rolls: [msg.rolls[0]],
+          // rolls: [activityRolls[0]],
+          user: config.message.user,
+          speaker: config.message.speaker,
+          flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
+                      `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`,
+          flags: {
+            rsr5e: config.roll.flags.rsr5e,
+            [MODULE_SHORT]: { 
+              processed: true, 
+              data: { msg, msgData, config },
+              rollMode: msgData.rollMode,
+              cls: msg.flags["ddb-game-log"].cls,
+              flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
+                      `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`
+            }
+          }
+        }
+      });
+      workflow = selectedActivity.workflow;
+
+      // activityRolls = await selectedActivity.rollAttack(config.roll, config.dialog, { 
+      //   create: false,
+      //   data: {
+      //     ...config.message,
+      //     flags: {
+      //       rsr5e: config.roll.flags.rsr5e,
+      //       [MODULE_SHORT]: { 
+      //         processed: true, 
+      //         data: { msg, msgData, config },
+      //         rollMode: msgData.rollMode,
+      //         cls: msg.flags["ddb-game-log"].cls,
+      //         flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
+      //                 `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`
+      //       }
+      //     }
+      //   }
+      // });
+
+      // copy terms from the original roll and recalculate
+      // RollUtil.replaceDie(activityRolls[0], msg.rolls[0]);
+      
+      workflow = selectedActivity.workflow;
+      RollUtil.replaceDie(workflow.attackRoll, msg.rolls[0]);
+
+      //MidiQOL.Workflow.getWorkflow(selectedActivity.uuid);
+
+      // if (workflow?.suspended) workflow.unSuspend.bind(workflow)({ attackRoll:  activityRolls[0] });
+      // if (workflow?.suspended) workflow.unSuspend.bind(workflow)({ attackRoll:  msg.rolls[0] });
+      LogUtil.log("triggerAttack - workflow", [workflow.chatCard, workflow.itemCardUuid, MidiQOL.debouncedUpdate]);
+      MidiQOL.debouncedUpdate(workflow.chatCard, { rolls: [workflow.attackRoll]})
+
+      // activityRolls = await selectedActivity.rollAttack({ midiOptions: { fastForward: true, chatMessage: false, isDummy: true } }, {}, {});
+      // if(activityRolls.length < 1){ return; }
+     */
+
+    }else{
+      // set the template for the chat message
+      oldTemplate = selectedActivity.metadata.usage.chatCard;
+      selectedActivity.metadata.usage.chatCard = `modules/${MODULE_SHORT}/templates/ddb-attack-info.hbs`;
+
+      activityRolls = await selectedActivity.rollAttack(config.roll, config.dialog, { 
+        create: false,
+        data: {
+          ...config.message 
+        }
+      });
+      if(activityRolls.length < 1){ return; }
+
+      // copy terms from the original roll and recalculate
+      if(SettingsUtil.get(SETTINGS.foundryRollModifiers.tag)){
+        RollUtil.replaceDie(activityRolls[0], msg.rolls[0]);
+      }else{
+        RollUtil.replaceTerms(activityRolls[0], msg.rolls[0]);
       }
-    });
-    usageResults.message.rolls = activityRolls;
+
+      usageResults = await ActivityUtil.ddbglUse(selectedActivity, config.roll, config.dialog, { 
+        create: false,
+        data: { 
+          // rollMsg: msg.content, 
+          rolls: [activityRolls[0]],
+          user: config.message.user,
+          speaker: config.message.speaker,
+          flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
+                      `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`,
+          flags: {
+            rsr5e: config.roll.flags.rsr5e,
+            [MODULE_SHORT]: { 
+              processed: true, 
+              data: { msg, msgData },
+              rollMode: msgData.rollMode,
+              cls: msg.flags["ddb-game-log"].cls,
+              flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
+                      `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`
+            }
+          }
+        }
+      });
+
+    }
+
     usageResults.message.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user});
     usageResults.message.flags = usageResults.message.flags ?? {};
+    usageResults.message.rolls = activityRolls;
+    LogUtil.log("triggerAttack - before card", [activityRolls, usageResults.message]);  
 
-    LogUtil.log("USAGE RESULTS", [usageResults, config.message, selectedActivity.metadata]);
-
-    await ChatMessage5e.create(usageResults.message, {rollMode: msgData.rollMode });
-    // await ChatMessage5e.create(usageResults.message, {rollMode: msgData.rollMode });
-    // await activityRolls[0].toMessage(config.message, {rollMode: msgData.rollMode });
+    if(!isMidiOn){
+      const card = await ChatMessage5e.create(usageResults.message, { rollMode: msgData.rollMode });
+      LogUtil.log("USAGE RESULTS", [card, usageResults, config.message, selectedActivity.metadata]);
+    }
+    
+    
+    // if(workflow){
+    //   workflow.itemCardUuid = card.uuid;
+    //   workflow.itemCardId = card.id;
+    //   // workflow.attackCardData = card;
+    //   workflow.attackRoll = activityRolls[0];
+    //   // workflow.processAttackRoll();
+    // }
 
     // set the template back to normal
-    selectedActivity.metadata.usage.chatCard = oldTemplate;
+    if(!isMidiOn){
+      selectedActivity.metadata.usage.chatCard = oldTemplate;
+    }
   }
+  // static triggerAttack  = async(selectedActivity, msg, msgData, config) => {
+  //   let usageResults, workflow;
+  //   if(!selectedActivity){ throw new Error('No associated activity found.') }
+
+  //   // config specific to attack rolls
+  //   config.roll.flags.rsr5e = { processed: true  };
+  //   config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user}); 
+  //   config.roll.flags.dnd5e.roll = { type: ROLL_TYPES.attack }; 
+  //   // config.roll.flags.dnd5e.activity = {
+  //   //   ...config.roll.flags.dnd5e.activity,
+  //   //   type: ROLL_TYPES.attack
+  //   // }
+  //   // config.message.flags = config.roll.flags;
+
+  //   LogUtil.log("triggerAttack", [config, selectedActivity]);
+
+  //   // return;
+  //   const isMidiOn = GeneralUtil.isModuleOn("midi-qol");
+  //   LogUtil.log("triggerAttack - isMidiOn", [isMidiOn, MidiQOL, selectedActivity, usageResults]);
+  //   if(isMidiOn){
+  //     workflow = new MidiQOL.Workflow(selectedActivity.actor, selectedActivity, msg.speaker, config.message.user.targets, 
+  //       { 
+  //         rolls: msg.rolls,
+  //         // itemCardUuid: usageResults.message.uuid
+  //       }
+  //     );
+  //     LogUtil.log("triggerAttack - workflow", [workflow]);
+  //   }
+
+  //   let activityRolls = await selectedActivity.rollAttack(config.roll, config.dialog, { 
+  //     create: false,
+  //     data: {
+  //       ...config.message 
+  //     }
+  //   });
+  //   if(activityRolls.length < 1){ return; }
+
+  //   // copy terms from the original roll and recalculate
+  //   RollUtil.replaceTerms(activityRolls[0], msg.rolls[0]);
+
+  //   // set the template for the chat message
+  //   const oldTemplate = selectedActivity.metadata.usage.chatCard;
+  //   selectedActivity.metadata.usage.chatCard = `modules/${MODULE_SHORT}/templates/ddb-attack-info.hbs`;
+
+  //   // usageResults.message.user = config.message.user;
+  //   usageResults = await ActivityUtil.ddbglUse(selectedActivity, config.roll, config.dialog, { 
+  //     create: false,
+  //     data: { 
+  //       rollMsg: msg.content, 
+  //       // rolls: msg.rolls,
+  //       user: config.message.user,
+  //       speaker: config.message.speaker,
+  //       flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
+  //                   `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`,
+  //       flags: {
+  //         rsr5e: config.roll.flags.rsr5e,
+  //         [MODULE_SHORT]: { 
+  //           processed: true, 
+  //           rollMode: msgData.rollMode,
+  //           cls: msg.flags["ddb-game-log"].cls,
+  //           flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
+  //                   `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`
+  //         }
+  //       }
+  //     }
+  //   });
+  //   usageResults.message.rolls = msg.rolls;
+  //   usageResults.message.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user});
+  //   usageResults.message.flags = usageResults.message.flags ?? {};
+
+  //   if(workflow){
+  //     workflow.itemCardUuid = usageResults.message.uuid;
+  //   }
+    
+  //   LogUtil.log("USAGE RESULTS", [usageResults, config.message, selectedActivity.metadata]);
+
+  //   await ChatMessage5e.create(usageResults.message, {rollMode: msgData.rollMode });
+  //   // await ChatMessage5e.create(usageResults.message, {rollMode: msgData.rollMode });
+  //   // await activityRolls[0].toMessage(config.message, {rollMode: msgData.rollMode });
+
+  //   // set the template back to normal
+  //   selectedActivity.metadata.usage.chatCard = oldTemplate;
+  // }
 
   /**
    * If DDB Gamelog message is a damage roll, find the activity
@@ -372,12 +602,29 @@ export class RollUtil{
    */
   static replaceTerms(roll, replacer){
     roll.terms = replacer.terms;
+    // roll.terms.forEach(term => {
+    //   LogUtil.log("replaceTerms", [term])
+    // })
     roll._total = roll._evaluateTotal();
     roll.resetFormula();
     return roll;
   }
 
+  static replaceDie(roll, replacer){
+    // roll.terms = replacer.terms;
+    // const rollDice = roll.terms.filter(t=>t instanceof Die);
+    const replacerDice = replacer.terms.filter(t=>t instanceof Die);
+    const noDice = roll.terms.filter(t=>!(t instanceof Die));
+    roll.terms = [...replacerDice, ...noDice];
+
+    roll._total = roll._evaluateTotal();
+    roll.resetFormula();
+    LogUtil.log("replaceDie", [roll.formula, roll.terms, replacer.terms]);
+    return roll;
+  }
+
   static getDialogSetting(defaultOption, config){
+    const SETTINGS = getSettings();
     const skipConfig = SettingsUtil.get(SETTINGS.skipRollConfig.tag); 
     LogUtil.log("getDialogSetting", ["skip mode: " + skipConfig, Main.keysPressed, config]); 
 

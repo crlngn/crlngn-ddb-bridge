@@ -1,0 +1,93 @@
+{
+  "CRLNGN": { 
+    "ui": { 
+      "notifications": {
+        "settingsUpdated": "Configurações salvas."
+      }
+    },
+    "settings": {
+      
+      "enableChatStyles": {
+        "label": "Ativar estilos das mensagens de chat",
+        "hint": "Adiciona modificações de estilo aos cartões de chat. Quando o modo escuro é selecionado no Foundry, os cartões de chat também ficarão escuros. PRINCIPALMENTE PARA DND5E - apenas suporte parcial para outros sistemas."
+      }, 
+
+      "ddbRollOwnership":{
+        "label": "Propriedade da Rolagem",
+        "hint": "Se você selecionar 'Mestre', o GM será solicitado a colocar templates para magias sempre que necessário. A segunda opção procurará pelo usuário ao qual este personagem está atribuído - se não houver nenhum, procurará por qualquer usuário com permissão de 'proprietário'. Padrão para GM se nenhum jogador for encontrado.",
+        "choices": {
+          "gm": {
+            "label": "Mestre"
+          },
+          "player": {
+            "label": "Jogador"
+          }
+        }
+      }, 
+
+      "foundryRollModifiers": {
+        "label": "Usar Modificadores de Rolagem do Foundry",
+        "hint": "Adicione os bônus e modificadores no Foundry, em vez de usar aqueles calculados no D&D Beyond. Isso é útil se você tiver módulos do Foundry que automatizam bônus para certas condições, como regras alternativas para flanqueamento ou efeitos temporários (DFred's Convenient Effects, por exemplo)."
+      },
+
+      "forceDDBGL": {
+        "label": "Forçar configurações do DDB Gamelog",
+        "hint": "Redefine automaticamente certas configurações do D&D Beyond Gamelog para que este módulo funcione melhor. Desativar esta configuração pode desativar a integração com o DDB Gamelog."
+      }, 
+
+      "removeTemplate": {
+        "label": "Remover Template após rolagem de dano",
+        "hint": "Quando uma magia tem um template, remova o template após o dano ser rolado. Isso afetará apenas as rolagens do DDB Gamelog. Se o template não tiver rolagem de dano, ele não será removido."
+      },
+
+      "templateAutoTarget": {
+        "label": "Alvo Automático de Template",
+        "hint": "Quando o template é desenhado no canvas, os tokens devem ser automaticamente alvejados? Isso afeta rolagens do DDB Gamelog e do Foundry",
+        "choices": {
+          "all": {
+            "label": "Marcar todos os tokens"
+          },
+          "notFriendly": {
+            "label": "Marcar não-amigáveis"
+          },
+          "none": {
+            "label": "Não marcar nenhum token"
+          }
+        }
+      },
+
+      "skipRollConfig": {
+        "label": "Pular diálogo de configuração de rolagem?",
+        "hint": "Opções: (1) pula a configuração, mas pressionar 'shift' durante a rolagem ainda abrirá o diálogo; (2) Comportamento padrão para rolagens do Foundry - pressione 'shift' para pular o diálogo. Nas rolagens do D&D Beyond, a janela de configuração nunca é mostrada.",
+        "choices": {
+          "all": {
+            "label": "Pular para todas as rolagens"
+          },
+          "ddbgl": {
+            "label": "Pular para rolagens do DDB Gamelog"
+          }
+        }
+      },
+
+      "debugMode": {
+        "label": "Modo de Depuração",
+        "hint": "Ativar ou desativar mensagens de depuração no console do navegador."
+      } 
+
+    },
+    "dnd5e": {
+      "chatCard": {
+        "buttons": {
+          "summons": "Invocações",
+          "attack": "Ataque",
+          "healing": "Cura",
+          "damage": "Dano",
+          "template": "Área de efeito",
+          "consume": "Consumir",
+          "refund": "Devolver",
+          "macro": "Macro"
+        }
+      }
+    }
+  }
+}

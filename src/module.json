@@ -1,7 +1,7 @@
 {
   "id": "crlngn-ddb-bridge",
   "title": "Carolingian DDB Bridge",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Adds DDB Gamelog support for DnD 4.x and streamlines roll functionality",
   "url": "https://github.com/crlngn/crlngn-ddb-bridge",
   "manifest": "https://github.com/crlngn/crlngn-ddb-bridge/releases/latest/download/module.json",
@@ -27,7 +27,7 @@
         "manifest": "https://raw.githubusercontent.com/foundryvtt/dnd5e/master/system.json",
         "compatibility": {
           "minimum": "4.0.3",
-          "verified": "4.3.1"
+          "verified": "4.3.3"
         }
       }
     ],
@@ -63,5 +63,17 @@
   ],
   "styles": [
     "styles/module.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    },
+    {
+      "lang": "pt-BR",
+      "name": "Português (BR)",
+      "path": "lang/pt-BR.json"
+    }
   ]
 }

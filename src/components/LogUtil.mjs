@@ -1,4 +1,5 @@
 import { DEBUG_TAG } from "../constants/General.mjs";
+import { getSettings } from "../constants/Settings.mjs";
 import { SettingsUtil } from "./SettingsUtil.mjs";
 
 export class LogUtil {
@@ -8,6 +9,7 @@ export class LogUtil {
      * @param {any[]} data - data to log on console
      */
     static log(ref="", data=[], bypassSettings=false){
+      const SETTINGS = getSettings();
       try{
         const debugSetting = SettingsUtil.get(SETTINGS.debugMode.tag);
         const isDebugModeOn = bypassSettings || debugSetting;

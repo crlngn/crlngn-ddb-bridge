@@ -1,0 +1,93 @@
+{
+  "CRLNGN": { 
+    "ui": { 
+      "notifications": {
+        "settingsUpdated": "Settings updated"
+      }
+    },
+    "settings": {
+      
+      "enableChatStyles": {
+        "label": "Enable styles for chat messages",
+        "hint": "Adds style modifications to chat cards. When dark mode is selected on Foundry, chat cards will be dark as well. MOSTLY FOR DND5E - only partial support for other systems."
+      }, 
+
+      "ddbRollOwnership":{
+        "label": "Roll Ownership",
+        "hint": "If you select Game master, the GM will be prompted to place templates for spells when needed. Option 2 will look for the user this actor is assigned to - if there is none, it will look for any user with 'owner' permission. Defaults to GM if no player is found.",
+        "choices": {
+          "gm": {
+            "label": "Game master"
+          },
+          "player": {
+            "label": "Player who owns character"
+          }
+        }
+      }, 
+
+      "foundryRollModifiers": {
+        "label": "Use Roll Modifiers from Foundry",
+        "hint": "Add the bonuses and modifiers on Foundry, instead of using those calculated on D&D Beyond. This is useful if you have Foundry modules that automate bonuses for certain conditions, such as alternative rule for flanking or temporary effects (DFred's Convenient Effects, for example). "
+      },
+
+      "forceDDBGL": {
+        "label": "Force DDB Gamelog settings",
+        "hint": "Automatically reset certain D&D Beyond Gamelog settings to make this module work better. Disabling this setting might disable integration with DDB Gamelog."
+      }, 
+
+      "removeTemplate": {
+        "label": "Remove Template after damage roll",
+        "hint": "When a spell has a template, remove the template after damage is rolled. This will only affect DDB Gamelog rolls. If the template has no damage roll, it is not removed."
+      },
+
+      "templateAutoTarget": {
+        "label": "Template Auto Targeting",
+        "hint": "When the template is drawn on canvas, should tokens be automatically targeted? This affects rolls from DDB Gamelog and Foundry",
+        "choices": {
+          "all": {
+            "label": "Target all tokens"
+          },
+          "notFriendly": {
+            "label": "Target non-friendly"
+          },
+          "none": {
+            "label": "Do NOT auto target"
+          }
+        }
+      },
+
+      "skipRollConfig": {
+        "label": "Skip roll config dialog?",
+        "hint": "Options: (1) skips configuration, but pressing 'shift' while rolling will still open dialog; (2) Default behavior for Foundry rolls - press 'shift' to skip dialog. On rolls from D&D Beyond, dialog is never shown.",
+        "choices": {
+          "all": {
+            "label": "Skip for all rolls"
+          },
+          "ddbgl": {
+            "label": "Skip for DDB Gamelog rolls"
+          }
+        }
+      },
+
+      "debugMode": {
+        "label": "Debug Mode",
+        "hint": "Enable or disable debug messages on browser console."
+      } 
+
+    },
+    "dnd5e": {
+      "chatCard": {
+        "buttons": {
+          "summons": "Summons",
+          "attack": "Attack",
+          "healing": "Healing",
+          "damage": "Damage",
+          "template": "Template",
+          "consume": "Consume",
+          "refund": "Refund",
+          "macro": "Macro"
+        }
+      }
+    }
+  }
+}

@@ -13,7 +13,7 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(version),
   },
-  base: '/modules/crlngn-ui/',
+  base: '/modules/crlngn-ddb-bridge/',
   css: {
     devSourcemap: true,
   },

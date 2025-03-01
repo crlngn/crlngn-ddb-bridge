@@ -1,0 +1,38 @@
+/*************
+Main Theme
+*************/
+
+/* ---------------------------------------- */
+/*  Colors                                  */
+/* ---------------------------------------- */
+body.crlngn-chat {
+   /* colors */ 
+	--color-text-hyperlink: var(--color-shadow-highlight);/* #00aaaa;*/
+	--color-control-bg: rgba(255,255,255,0.35);
+	--dnd5e-border-groove: 1px solid rgba(0,0,0,0.35);
+	--dnd5e-color-parchment: #f4efed;
+
+  /* Updated main theme colors */
+  --color-dark-bg-15: rgba(15, 15, 15, 0.15);
+  --color-dark-bg-25: rgba(15, 15, 15, 0.25);
+  --color-dark-bg-50: rgba(15, 15, 15, 0.5);
+  --color-dark-bg-75: rgba(15, 15, 15, 0.75);
+  --color-dark-bg-85: rgba(15, 15, 15, 0.85);
+  --color-dark-bg-90: rgba(15, 15, 15, 0.9);
+  --color-dark-bg: rgba(15, 15, 15, 1); 
+  --color-light-bg-15: rgba(233, 233, 226, 0.15);
+  --color-light-bg-25: rgba(233, 233, 226, 0.25);
+  --color-light-bg-50: rgba(233, 233, 226, 0.50);
+  --color-light-bg-75: rgba(233, 233, 226, 0.75);
+  --color-light-bg-85: rgba(233, 233, 226, 0.85);
+  --color-light-bg-90: rgba(233, 233, 226, 0.9);
+  --color-light-bg: rgba(233, 233, 226, 1);
+ 
+
+  &.theme-dark, &[data-ddb-custom-style=dark]{
+    --dnd5e-color-beige: rgba(0,0,0,0.2);
+    --color-text-dark: rgba(235,235,235,1);
+    --color-text-dark-op: rgba(235,235,235,0.6);
+  }
+
+}
