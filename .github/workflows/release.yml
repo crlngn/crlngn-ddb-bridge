@@ -121,7 +121,7 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
           args: |
-            **New Release for Carolingian UI**
+            **New Release!**
             
             **Repository:** ${{ github.repository }}
             **Version:** ${{ github.ref_name }}
