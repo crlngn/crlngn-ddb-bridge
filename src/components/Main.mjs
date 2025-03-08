@@ -20,6 +20,20 @@ export class Main {
     Main.registerHooks();
   }
 
+  static addCSSLocalization(){
+    const body = document.querySelector('body');
+    const locBtnPath = 'CRLNGN_UI.dnd5e.chatCard.buttons';
+    body.style.setProperty('--crlngn-i18n-attack', game.i18n.localize(`${locBtnPath}.attack`));
+    body.style.setProperty('--crlngn-i18n-damage', game.i18n.localize(`${locBtnPath}.damage`));
+    body.style.setProperty('--crlngn-i18n-summons', game.i18n.localize(`${locBtnPath}.summons`));
+    body.style.setProperty('--crlngn-i18n-healing', game.i18n.localize(`${locBtnPath}.healing`));
+    body.style.setProperty('--crlngn-i18n-template', game.i18n.localize(`${locBtnPath}.template`));
+    body.style.setProperty('--crlngn-i18n-consume', game.i18n.localize(`${locBtnPath}.consume`));
+    body.style.setProperty('--crlngn-i18n-refund', game.i18n.localize(`${locBtnPath}.refund`));
+    body.style.setProperty('--crlngn-i18n-macro', game.i18n.localize(`${locBtnPath}.macro`));
+    body.style.setProperty('--crlngn-i18n-save-dc', game.i18n.localize(`${locBtnPath}.savedc`));
+  }
+
   static registerHooks(){
     SocketUtil.initialize(() => {
       LogUtil.log("SocketUtil - initialized with socket", [SocketUtil.socket, game.system.utils.areKeysPressed]);
@@ -35,6 +49,7 @@ export class Main {
       Main.registerRollHooks();
       Main.registerChatHooks();
       Main.registerTemplateHooks(); 
+      Main.addCSSLocalization();
     })
 
     Hooks.once(HOOKS_CORE.READY, () => { 
@@ -178,7 +193,7 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
   
   const msg = { ...chatMessage };
   ddbglCls = GeneralUtil.isModuleOn("ddb-game-log") ? chatMessage.getFlag("ddb-game-log","cls")?.toLowerCase() || "" : ""; // does the flag exist?
-  isProcessed = chatMessage.getFlag(MODULE_SHORT, "processed") || false;
+  isProcessed = chatMessage.getFlag(MODULE_SHORT, "processed") || false; 
 
   LogUtil.log(HOOKS_CORE.PRE_CREATE_CHAT_MESSAGE, [ 
     ddbglCls, chatMessage, {...msgConfig}, options
@@ -203,19 +218,7 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
       let actionName = flavorElem?.querySelector("span:first-child")?.innerHTML.replace(":","");
 
       item = actionName ? GeneralUtil.findItemFromActor(msgConfig.speaker.actor, itemId, actionName) : null;
-/*
-      item = itemId ? actor.items.find((it) => {
-        // LogUtil.log("item",[it]); 
-        return it.id === itemId; 
-      }) : null; 
 
-      if(!item){ 
-        // match exact name
-        item = actionName ? actor.items.find((it) => it.name.toLowerCase() === actionName.toLowerCase()) : null;
-        // if no exact name, look for the name with "(Legacy)" tag
-        if(!item){ item = actor.items.find((it) => it.name.toLowerCase() === (actionName + " (Legacy)").toLowerCase()) };
-      } 
-*/
       if(!item && 
         ( ddbglCls === DDBGL_CLS.toHit.cls || 
           ddbglCls === DDBGL_CLS.damage.cls || 
@@ -228,12 +231,11 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
         const user = GeneralUtil.getUserFromActor(msg.speaker?.actor);
         const playerMakesRoll = SettingsUtil.get(SETTINGS.ddbRollOwnership.tag) == 2;
 
-        LogUtil.log("playerMakesRoll", [SettingsUtil.get(SETTINGS.ddbRollOwnership.tag)]);
+        // Forward the action to a player or keep it on GM depending on current settings
         if(user && playerMakesRoll){
           SocketUtil.execAsUser('DDBRoll', user.id, ddbglCls, itemId, actionName, msg, msgConfig); 
         }else{
           RollUtil.streamlineDDBRoll(ddbglCls, itemId, actionName, msg, msgConfig);
-          //ddbglCls, item, actionName, msg, msgConfig); 
         }
       }
     }else{ 
@@ -321,8 +323,14 @@ const onRollDamage = (
  * @param {D20Roll[]} rolls 
  * @param {AttackRollData} data
  */
-const onRollAttack = async(rolls, data) => {
-  LogUtil.log(HOOKS_DND5E.ROLL_ATTACK_V2, [rolls, data]);
+const onRollAttack = async(rolls, data, c, d) => {
+  LogUtil.log(HOOKS_DND5E.ROLL_ATTACK_V2, [rolls, data, c, d]);
+
+  const isMidiOn = GeneralUtil.isModuleOn('midi-qol');
+  if(isMidiOn){
+    LogUtil.log(HOOKS_DND5E.ROLL_ATTACK_V2, [MidiQOL.getWorkflow]);
+    // RollUtil.replaceDie(rolls[0], )
+  }
 }
 
 /**

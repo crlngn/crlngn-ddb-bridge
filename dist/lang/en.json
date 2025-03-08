@@ -85,7 +85,8 @@
           "template": "Template",
           "consume": "Consume",
           "refund": "Refund",
-          "macro": "Macro"
+          "macro": "Macro",
+          "savedc": "Save DC"
         }
       }
     }
