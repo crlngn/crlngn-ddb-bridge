@@ -21,9 +21,9 @@ export class Main {
   }
 
   static addCSSLocalization(){
-    const locBtnPath = 'CRLNGN-DDB-BRIDGE.dnd5e.chatCard.buttons';
+    const locBtnPath = 'CRLNGN.dnd5e.chatCard.buttons';
 
-    LogUtil.log('Test', [game.i18n.translations, game.i18n.translations['CRLNGN-DDB-BRIDGE']]);
+    LogUtil.log('Test', [game.i18n.translations, game.i18n.translations['CRLNGN']]);
     LogUtil.log(`Full path being requested: ${locBtnPath}.attack`); 
     if (game.i18n.has(`${locBtnPath}.attack`)) {
       // Key exists and should work
