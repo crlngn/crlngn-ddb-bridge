@@ -30,9 +30,11 @@ body.crlngn-chat {
  
 
   &.theme-dark, &[data-ddb-custom-style=dark]{
-    --dnd5e-color-beige: rgba(0,0,0,0.2);
-    --color-text-dark: rgba(235,235,235,1);
-    --color-text-dark-op: rgba(235,235,235,0.6);
+    .sidebar-tab{
+      --dnd5e-color-beige: rgba(0,0,0,0.2);
+      --color-text-dark: rgba(235,235,235,1);
+      --color-text-dark-op: rgba(235,235,235,0.6);
+    }
   }
 
 }

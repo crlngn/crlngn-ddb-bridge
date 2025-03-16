@@ -7,16 +7,35 @@ import ChatMessage5e from "../../dnd5e/module/documents/chat-message.mjs";
 import { SettingsUtil } from "./SettingsUtil.mjs";
 import { getSettings } from "../constants/Settings.mjs";
 import { Main } from "./Main.mjs";
+import { SocketUtil } from "./SocketUtil.mjs";
 
 export class RollUtil{
+
   // ddbglCls, itemId, actionName, msg, msgConfig
-  static streamlineDDBRoll = async (ddbglCls, itemId, actionName, msg, msgData) => {
-    let selectedActivity = null, castActivity = null;
+  static streamlineDDBRoll = async (ddbglCls, itemId, actionName, message, messageData) => {
+    LogUtil.log('streamlineDDBRoll - A', [message, messageData]);
+    let msg = message;
+    let msgData = messageData;
+    
+    if(ddbglCls && !game.user.isGM){
+      msg = SocketUtil.deserializeFromTransport(message);
+    }
+
+    // Set the author
+    msgData.author = game.user;
+
+    let selectedActivity = null;
     let user = game.user;
     let item = actionName ? GeneralUtil.findItemFromActor(msgData.speaker.actor, itemId, actionName) : null;
-
-    msg.rolls = msg.rolls.map(rollData => Roll.fromJSON(rollData));
+    let actor = game.actors.get(msgData.actor._id);
+    if(actor){
+      msgData.actor = actor;
+    }
+    // msg.rolls = msg.rolls.map(rollData => Roll.fromJSON(rollData));
     
+    // const json = JSON.parse(msg);
+    LogUtil.log('streamlineDDBRoll - B', [msgData, msg, game.messages.get(msg.id || msg._id)]);
+
     let config = {}, originalRoll = msg.rolls[0];
 
     config.message = {
@@ -36,7 +55,7 @@ export class RollUtil{
       formula: originalRoll.formula,
       consume: { resources: false, spellSlot: false },
       user: user,
-      rolls: [],
+      rolls: [msg.rolls[0] || msgConfig.rolls[0]],
       flags: {
         ...msg.flags, 
         [MODULE_SHORT]: { processed: true },
@@ -47,6 +66,7 @@ export class RollUtil{
         rsr5e: { processed: true, quickRoll: false }
       }
     };
+
     msg.flags = config.roll.flags;
     try{
       switch(true){ 
@@ -108,8 +128,8 @@ export class RollUtil{
     config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user}); 
     config.roll.flags.dnd5e.roll = { type: ROLL_TYPES.attack }; 
 
-    LogUtil.log("triggerAttack", [config, selectedActivity]);
-    LogUtil.log("triggerAttack - isMidiOn", [isMidiOn, selectedActivity, usageResults]);
+    // LogUtil.log("triggerAttack", [config, selectedActivity]);
+    // LogUtil.log("triggerAttack - isMidiOn", [isMidiOn, selectedActivity, usageResults]);
 
     if(isMidiOn){
       workflow = new MidiQOL.Workflow(selectedActivity.actor, selectedActivity, msg.speaker, config.message.user.targets, { 
@@ -131,14 +151,13 @@ export class RollUtil{
       });
       if(activityRolls.length < 1){ return; }
 
-
-      LogUtil.log("triggerAttack - rolls", [activityRolls[0].result, msg.rolls[0].result]);
+      LogUtil.log("triggerAttack - rolls", [activityRolls[0], msg.rolls[0]]);
       
       // copy terms from the original roll and recalculate
       if(SettingsUtil.get(SETTINGS.foundryRollModifiers.tag)){
-        RollUtil.replaceDie(activityRolls[0], msg.rolls[0]);
+        activityRolls[0] = RollUtil.replaceDie(activityRolls[0], msg.rolls[0]);
       }else{
-        RollUtil.replaceTerms(activityRolls[0], msg.rolls[0]);
+        activityRolls[0] = RollUtil.replaceTerms(activityRolls[0], msg.rolls[0]);
       }
 
       LogUtil.log("triggerAttack - activityRolls", [activityRolls, usageResults, workflow]);
@@ -220,12 +239,14 @@ export class RollUtil{
       });
       if(activityRolls.length < 1){ return; }
 
+      LogUtil.log("triggerAttack - before", [activityRolls, msg.rolls]);
       // copy terms from the original roll and recalculate
       if(SettingsUtil.get(SETTINGS.foundryRollModifiers.tag)){
-        RollUtil.replaceDie(activityRolls[0], msg.rolls[0]);
+        activityRolls[0] = RollUtil.replaceDie(activityRolls[0], msg.rolls[0]);
       }else{
-        RollUtil.replaceTerms(activityRolls[0], msg.rolls[0]);
+        activityRolls[0] = RollUtil.replaceTerms(activityRolls[0], msg.rolls[0]);
       }
+      LogUtil.log("triggerAttack - after", [activityRolls, msg.rolls]);
 
       usageResults = await ActivityUtil.ddbglUse(selectedActivity, config.roll, config.dialog, { 
         create: false,
@@ -275,89 +296,6 @@ export class RollUtil{
       selectedActivity.metadata.usage.chatCard = oldTemplate;
     }
   }
-  // static triggerAttack  = async(selectedActivity, msg, msgData, config) => {
-  //   let usageResults, workflow;
-  //   if(!selectedActivity){ throw new Error('No associated activity found.') }
-
-  //   // config specific to attack rolls
-  //   config.roll.flags.rsr5e = { processed: true  };
-  //   config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user}); 
-  //   config.roll.flags.dnd5e.roll = { type: ROLL_TYPES.attack }; 
-  //   // config.roll.flags.dnd5e.activity = {
-  //   //   ...config.roll.flags.dnd5e.activity,
-  //   //   type: ROLL_TYPES.attack
-  //   // }
-  //   // config.message.flags = config.roll.flags;
-
-  //   LogUtil.log("triggerAttack", [config, selectedActivity]);
-
-  //   // return;
-  //   const isMidiOn = GeneralUtil.isModuleOn("midi-qol");
-  //   LogUtil.log("triggerAttack - isMidiOn", [isMidiOn, MidiQOL, selectedActivity, usageResults]);
-  //   if(isMidiOn){
-  //     workflow = new MidiQOL.Workflow(selectedActivity.actor, selectedActivity, msg.speaker, config.message.user.targets, 
-  //       { 
-  //         rolls: msg.rolls,
-  //         // itemCardUuid: usageResults.message.uuid
-  //       }
-  //     );
-  //     LogUtil.log("triggerAttack - workflow", [workflow]);
-  //   }
-
-  //   let activityRolls = await selectedActivity.rollAttack(config.roll, config.dialog, { 
-  //     create: false,
-  //     data: {
-  //       ...config.message 
-  //     }
-  //   });
-  //   if(activityRolls.length < 1){ return; }
-
-  //   // copy terms from the original roll and recalculate
-  //   RollUtil.replaceTerms(activityRolls[0], msg.rolls[0]);
-
-  //   // set the template for the chat message
-  //   const oldTemplate = selectedActivity.metadata.usage.chatCard;
-  //   selectedActivity.metadata.usage.chatCard = `modules/${MODULE_SHORT}/templates/ddb-attack-info.hbs`;
-
-  //   // usageResults.message.user = config.message.user;
-  //   usageResults = await ActivityUtil.ddbglUse(selectedActivity, config.roll, config.dialog, { 
-  //     create: false,
-  //     data: { 
-  //       rollMsg: msg.content, 
-  //       // rolls: msg.rolls,
-  //       user: config.message.user,
-  //       speaker: config.message.speaker,
-  //       flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
-  //                   `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`,
-  //       flags: {
-  //         rsr5e: config.roll.flags.rsr5e,
-  //         [MODULE_SHORT]: { 
-  //           processed: true, 
-  //           rollMode: msgData.rollMode,
-  //           cls: msg.flags["ddb-game-log"].cls,
-  //           flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
-  //                   `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`
-  //         }
-  //       }
-  //     }
-  //   });
-  //   usageResults.message.rolls = msg.rolls;
-  //   usageResults.message.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user});
-  //   usageResults.message.flags = usageResults.message.flags ?? {};
-
-  //   if(workflow){
-  //     workflow.itemCardUuid = usageResults.message.uuid;
-  //   }
-    
-  //   LogUtil.log("USAGE RESULTS", [usageResults, config.message, selectedActivity.metadata]);
-
-  //   await ChatMessage5e.create(usageResults.message, {rollMode: msgData.rollMode });
-  //   // await ChatMessage5e.create(usageResults.message, {rollMode: msgData.rollMode });
-  //   // await activityRolls[0].toMessage(config.message, {rollMode: msgData.rollMode });
-
-  //   // set the template back to normal
-  //   selectedActivity.metadata.usage.chatCard = oldTemplate;
-  // }
 
   /**
    * If DDB Gamelog message is a damage roll, find the activity
@@ -403,30 +341,69 @@ export class RollUtil{
         
         // copy terms from the original roll and recalculate
         if(SettingsUtil.get(SETTINGS.foundryRollModifiers.tag)){
-          RollUtil.replaceDie(activityRolls[0], msg.rolls[0]);
+          activityRolls[0] = RollUtil.replaceDie(activityRolls[0], msg.rolls[0]);
         }else{
-          RollUtil.replaceTerms(activityRolls[0], msg.rolls[0]);
+          activityRolls[0] = RollUtil.replaceTerms(activityRolls[0], msg.rolls[0]);
         }
 
         await workflow.setDamageRoll(activityRolls[0]);
         await workflow.WorkflowState_DamageRollComplete();
         await workflow.setDamageRoll(activityRolls[0]);
-
       }
 
     }else{ 
+      let activityRolls = [];
+
       if(!selectedActivity.attack){
+        // usageResults = await ActivityUtil.ddbglUse(selectedActivity, config.roll, config.dialog, { 
+        //   create: false
+        // });
         usageResults = await ActivityUtil.ddbglUse(selectedActivity, config.roll, config.dialog, { 
           create: false
-        });
+          // ,
+          // data: { 
+          //   // rollMsg: msg.content, 
+          //   // rolls: [activityRolls[0]],
+          //   user: config.message.user,
+          //   speaker: config.message.speaker,
+          //   flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
+          //               `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`,
+          //   flags: {
+          //     rsr5e: config.roll.flags.rsr5e,
+          //     [MODULE_SHORT]: { 
+          //       processed: true, 
+          //       data: { msg, msgData },
+          //       rollMode: msgData.rollMode,
+          //       cls: msg.flags["ddb-game-log"].cls,
+          //       flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
+          //               `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`
+          //     }
+          //   }
+          // }
+        })
         await ChatMessage5e.create(usageResults.message, {rollMode: msgData.rollMode }); 
       }
-      LogUtil.log("triggerDamage", [config, selectedActivity])
+      LogUtil.log("triggerDamage A", [config.roll, config.dialog, selectedActivity, usageResults]);
   
-      let activityRolls = await selectedActivity.rollDamage(config.roll, config.dialog, { 
-        create: false, // data: { flags: config.message.flags }   
-      }); 
-  
+      try{
+        activityRolls = await selectedActivity.rollDamage({
+          flags: config.roll.flags,
+          consume: config.roll.consume,
+          formula: config.roll.formula,
+          user: config.roll.user
+        }, config.dialog, { 
+          create: false
+          // ,
+          // data: {
+          //   ...config.message 
+          // }
+        }); 
+      }catch(e){
+        LogUtil.error("triggerDamage B", [e]);
+      }
+
+      LogUtil.log("triggerDamage - activityRolls", [activityRolls]);
+
       if(activityRolls.length < 1){ return; }
       RollUtil.replaceTerms(activityRolls[0], msg.rolls[0]);
       
@@ -450,7 +427,7 @@ export class RollUtil{
         rsr5e: config.roll.flags.rsr5e
       }; 
   
-      // await ChatMessage5e.create(config.message, {rollMode: msgData.rollMode }); 
+      // await ChatMessage5e.create(config.message, {rollMode: msgData.rollMode });
       await activityRolls[0].toMessage(config.message, {rollMode: msgData.rollMode });
       
       if(!selectedActivity.attack){
@@ -602,24 +579,31 @@ export class RollUtil{
    */
   static replaceTerms(roll, replacer){
     roll.terms = replacer.terms;
-    // roll.terms.forEach(term => {
-    //   LogUtil.log("replaceTerms", [term])
-    // })
     roll._total = roll._evaluateTotal();
     roll.resetFormula();
     return roll;
   }
 
+  // static replaceDie(roll, replacer){
+  //   if(!replacer || !roll){ return roll; }
+  //   const replacerDice = replacer.terms.filter(t=>t.class === 'Die') || [];
+  //   const noDice = roll?.terms.filter(t=>t.class !== 'Die') || [];
+  //   roll.terms = [...replacerDice, ...noDice];
+
+  //   roll._total = roll._evaluateTotal();
+  //   roll.resetFormula();
+  //   return roll;
+  // }
+
   static replaceDie(roll, replacer){
-    // roll.terms = replacer.terms;
-    // const rollDice = roll.terms.filter(t=>t instanceof Die);
-    const replacerDice = replacer.terms.filter(t=>t instanceof Die);
-    const noDice = roll.terms.filter(t=>!(t instanceof Die));
+    if(!replacer || !roll){ return roll; }
+    LogUtil.log("replaceDie", [replacer, roll]);
+    const replacerDice = replacer.terms.filter(t=>t instanceof Die || t.class === 'Die') || [];
+    const noDice = roll?.terms.filter(t=>!(t instanceof Die || t.class === 'Die')) || [];
     roll.terms = [...replacerDice, ...noDice];
 
     roll._total = roll._evaluateTotal();
     roll.resetFormula();
-    LogUtil.log("replaceDie", [roll.formula, roll.terms, replacer.terms]);
     return roll;
   }
 

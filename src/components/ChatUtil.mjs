@@ -5,20 +5,32 @@ import { LogUtil } from "./LogUtil.mjs";
 import { SettingsUtil } from "./SettingsUtil.mjs";
 
 export class ChatUtil {
+  static chatMsgSettings;
+
+  static init(){
+    const SETTINGS = getSettings();
+    ChatUtil.chatMsgSettings = SettingsUtil.get(SETTINGS.enableChatStyles.tag);
+  }
 
   static enrichCard(chatMessage, html){
-    const SETTINGS = getSettings();
+    // const SETTINGS = getSettings();
     html.classList.remove('ddb-game-log-open-card');
-  
-    if(SettingsUtil.get(SETTINGS.enableChatStyles.tag)){ 
+
+    const chatStyles = ChatUtil.chatMsgSettings;
+
+    if(chatStyles){ 
       const rollType = chatMessage.flags?.dnd5e?.activity?.type || chatMessage.flags?.dnd5e?.roll?.type || "custom";
       let elem = html.get ? html.get(0) : html;
+
       elem.classList.add('crlngn');
-      elem.classList.add(rollType);      
-    }    
-    if(chatMessage.flags?.["ddb-game-log"]){
-      html.classList.add('ddbgl');
-    }
+      elem.classList.add(rollType);
+      LogUtil.log("enrichCard", [chatStyles.borderColor, chatMessage.author?.id]); 
+
+      if(chatStyles.flags?.["ddb-game-log"]){
+        html.classList.add('ddbgl');
+      }
+  
+    }  
   }
 
   /**

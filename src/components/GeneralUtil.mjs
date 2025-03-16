@@ -47,22 +47,6 @@ export class GeneralUtil {
     }
     return Array.from(targets.values());
   }
-  // static getTargetDescriptors({ actorId, user }) {
-  //   const targets = new Map();
-  //   //  let currUser = user || (actorId ? GeneralUtil.getUserFromActor(actorId) : game.user) || []
-  //   const userTargets = getClientTargets() || []; 
-  //   LogUtil.log("getTargetDescriptors", [userTargets]);
-
-  //   for ( const token of currUser.targets ) {
-  //     const { name } = token;
-  //     const { img, system, uuid, statuses } = token.actor ?? {};
-  //     if ( uuid ) {
-  //       const ac = statuses.has("coverTotal") ? null : system.attributes?.ac?.value;
-  //       targets.set(uuid, { name, img, uuid, ac: ac ?? null });
-  //     } 
-  //   }
-  //   return Array.from(targets.values());
-  // }
 
   /**
    * 
@@ -176,4 +160,84 @@ export class GeneralUtil {
   static html(parent, selector) {
     return parent.querySelector(selector);
   }
+
+  /**
+   * Adds css rules to a <style> element at the body
+   * @param {string} varName 
+   * @param {string} varValue 
+   */
+  static addCSSVars = (varName, varValue) => {
+    let bodyStyle = document.querySelector('#crlngn-chat-vars');
+    
+    if (!bodyStyle) {
+      // Create style element if it doesn't exist
+      const body = document.querySelector('body');
+      bodyStyle = document.createElement('style');
+      bodyStyle.id = 'crlngn-chat-vars';
+      bodyStyle.textContent = 'body.crlngn-chat {\n}\n';
+      body.prepend(bodyStyle);
+    }
+    
+    // Parse the current CSS content
+    let cssText = bodyStyle.textContent;
+    
+    // Find or create the rule block
+    let ruleStart = cssText.indexOf('body.crlngn-chat {');
+    let ruleEnd = cssText.indexOf('}', ruleStart);
+    
+    if (ruleStart === -1) {
+      // If rule doesn't exist, create it
+      cssText = 'body.crlngn-chat {\n}\n';
+      ruleStart = 0;
+      ruleEnd = cssText.indexOf('}');
+    }
+    
+    // Get all the current declarations
+    const rulePart = cssText.substring(ruleStart + 'body.crlngn-chat {'.length, ruleEnd);
+    
+    // Split by semicolons to get individual declarations
+    const declarations = rulePart.split(';')
+      .map(decl => decl.trim())
+      .filter(decl => decl !== '');
+    
+    // Create a map of existing variables
+    const varsMap = {};
+    declarations.forEach(decl => {
+      const parts = decl.split(':');
+      if (parts.length >= 2) {
+        const name = parts[0].trim();
+        const value = parts.slice(1).join(':').trim(); // Handle values that might contain colons
+        if (name) varsMap[name] = value;
+      }
+    });
+    
+    // Format the value if it appears to need quotes
+    // For string values used in content properties (i18n text)
+    if (varName.includes('i18n') && 
+        typeof varValue === 'string' && 
+        !varValue.startsWith('"') && 
+        !varValue.startsWith("'") && 
+        !varValue.match(/^url\(|^rgba?\(|^hsla?\(/)) {
+      varValue = `"${varValue}"`;
+    }
+    
+    // Update or add the new variable
+    varsMap[varName] = varValue;
+    
+    // Rebuild the rule content
+    const newRuleContent = Object.entries(varsMap)
+      .map(([name, value]) => `  ${name}: ${value};`)
+      .join('\n');
+    
+    // Rebuild the entire CSS
+    const newCss = 
+      cssText.substring(0, ruleStart) + 
+      'body.crlngn-chat {\n' + 
+      newRuleContent + 
+      '\n}' + 
+      cssText.substring(ruleEnd + 1);
+    
+    // Update the style element
+    bodyStyle.textContent = newCss;
+  };
 }

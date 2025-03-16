@@ -21,17 +21,26 @@ export class Main {
   }
 
   static addCSSLocalization(){
-    const body = document.querySelector('body');
-    const locBtnPath = 'CRLNGN_UI.dnd5e.chatCard.buttons';
-    body.style.setProperty('--crlngn-i18n-attack', game.i18n.localize(`${locBtnPath}.attack`));
-    body.style.setProperty('--crlngn-i18n-damage', game.i18n.localize(`${locBtnPath}.damage`));
-    body.style.setProperty('--crlngn-i18n-summons', game.i18n.localize(`${locBtnPath}.summons`));
-    body.style.setProperty('--crlngn-i18n-healing', game.i18n.localize(`${locBtnPath}.healing`));
-    body.style.setProperty('--crlngn-i18n-template', game.i18n.localize(`${locBtnPath}.template`));
-    body.style.setProperty('--crlngn-i18n-consume', game.i18n.localize(`${locBtnPath}.consume`));
-    body.style.setProperty('--crlngn-i18n-refund', game.i18n.localize(`${locBtnPath}.refund`));
-    body.style.setProperty('--crlngn-i18n-macro', game.i18n.localize(`${locBtnPath}.macro`));
-    body.style.setProperty('--crlngn-i18n-save-dc', game.i18n.localize(`${locBtnPath}.savedc`));
+    const locBtnPath = 'CRLNGN-DDB-BRIDGE.dnd5e.chatCard.buttons';
+
+    LogUtil.log('Test', [game.i18n.translations, game.i18n.translations['CRLNGN-DDB-BRIDGE']]);
+    LogUtil.log(`Full path being requested: ${locBtnPath}.attack`); 
+    if (game.i18n.has(`${locBtnPath}.attack`)) {
+      // Key exists and should work
+      LogUtil.warn(`Key exists`);
+    } else {
+      LogUtil.warn(`Missing translation key: ${locBtnPath}.attack`);
+    }  
+    
+    GeneralUtil.addCSSVars('--crlngn-i18n-attack', game.i18n.localize(`${locBtnPath}.attack`));
+    GeneralUtil.addCSSVars('--crlngn-i18n-damage', game.i18n.localize(`${locBtnPath}.damage`));
+    GeneralUtil.addCSSVars('--crlngn-i18n-summons', game.i18n.localize(`${locBtnPath}.summons`));
+    GeneralUtil.addCSSVars('--crlngn-i18n-healing', game.i18n.localize(`${locBtnPath}.healing`));
+    GeneralUtil.addCSSVars('--crlngn-i18n-template', game.i18n.localize(`${locBtnPath}.template`));
+    GeneralUtil.addCSSVars('--crlngn-i18n-consume', game.i18n.localize(`${locBtnPath}.consume`));
+    GeneralUtil.addCSSVars('--crlngn-i18n-refund', game.i18n.localize(`${locBtnPath}.refund`));
+    GeneralUtil.addCSSVars('--crlngn-i18n-macro', game.i18n.localize(`${locBtnPath}.macro`));
+    GeneralUtil.addCSSVars('--crlngn-i18n-save-dc', game.i18n.localize(`${locBtnPath}.savedc`));
   }
 
   static registerHooks(){
@@ -49,7 +58,6 @@ export class Main {
       Main.registerRollHooks();
       Main.registerChatHooks();
       Main.registerTemplateHooks(); 
-      Main.addCSSLocalization();
     })
 
     Hooks.once(HOOKS_CORE.READY, () => { 
@@ -62,6 +70,8 @@ export class Main {
 
       SettingsUtil.resetGamelogSettings();
       Main.registerSocketFunction();
+      Main.addCSSLocalization();
+      ChatUtil.init();
     });
 
     Hooks.on(HOOKS_CORE.CLOSE_SETTINGS_CONFIG, () => {
@@ -191,17 +201,18 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
   let isDDBGL = false;
   let actor, ddbglCls, itemId, item, isProcessed=false;
   
-  const msg = { ...chatMessage };
+  let msg = chatMessage;
   ddbglCls = GeneralUtil.isModuleOn("ddb-game-log") ? chatMessage.getFlag("ddb-game-log","cls")?.toLowerCase() || "" : ""; // does the flag exist?
   isProcessed = chatMessage.getFlag(MODULE_SHORT, "processed") || false; 
 
   LogUtil.log(HOOKS_CORE.PRE_CREATE_CHAT_MESSAGE, [ 
-    ddbglCls, chatMessage, {...msgConfig}, options
+    ddbglCls, msg, msgConfig, options
   ]);
 
   if(ddbglCls && !isProcessed){ 
     actor = msgConfig.actor || game.actors.get(msgConfig.speaker.actor) || null;
     itemId =  msgConfig.flags?.["ddb-game-log"]?.["itemId"] || ""; 
+    msg.rolls = msg.rolls && msg.rolls.length > 0 ? [msg.rolls[0]] : [msgConfig.rolls[0]] || [];
 
     if(actor){
       isDDBGL = true; 
@@ -226,15 +237,23 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
         LogUtil.error("Could not find an item for the roll", [ddbglCls, actionName, actor.items]);
         return true; 
       }else{
-        // destructure the roll before sending via socket
-        msg.rolls = msg.rolls.map(roll => JSON.stringify(roll.toJSON()));
+        
         const user = GeneralUtil.getUserFromActor(msg.speaker?.actor);
         const playerMakesRoll = SettingsUtil.get(SETTINGS.ddbRollOwnership.tag) == 2;
+        // destructure the roll before sending via socket
+        // msgConfig = JSON.stringify(msgConfig);
+        // msg.rolls = msg.rolls.map(roll => roll.toJSON());
 
         // Forward the action to a player or keep it on GM depending on current settings
         if(user && playerMakesRoll){
-          SocketUtil.execAsUser('DDBRoll', user.id, ddbglCls, itemId, actionName, msg, msgConfig); 
+          LogUtil.log("Main - Before serialization", [msg]);
+          const serializedMsg = SocketUtil.serializeForTransport(msg);
+          LogUtil.log("Main - After serialization", [serializedMsg]);
+          LogUtil.log("CHECK ROLL", [playerMakesRoll, user, serializedMsg, msgConfig]);
+          // SocketUtil.execAsUser('DDBRoll', user.id, ddbglCls, itemId, actionName, msg, msgConfig); 
+          SocketUtil.execAsUser('DDBRoll', user.id, ddbglCls, itemId, actionName, serializedMsg, msgConfig); 
         }else{
+          LogUtil.log("Main - No serialization", [msg]);
           RollUtil.streamlineDDBRoll(ddbglCls, itemId, actionName, msg, msgConfig);
         }
       }

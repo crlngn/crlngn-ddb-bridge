@@ -1,5 +1,5 @@
 {
-  "CRLNGN": { 
+  "CRLNGN-DDB-BRIDGE": { 
     "ui": { 
       "notifications": {
         "settingsUpdated": "Configurações salvas."
@@ -82,10 +82,11 @@
           "attack": "Ataque",
           "healing": "Cura",
           "damage": "Dano",
-          "template": "Área de efeito",
+          "template": "Área",
           "consume": "Consumir",
           "refund": "Devolver",
-          "macro": "Macro"
+          "macro": "Macro",
+          "savedc": "CD"
         }
       }
     }
