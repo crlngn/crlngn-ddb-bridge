@@ -13,9 +13,7 @@ export class SettingsUtil {
     const SETTINGS = getSettings();
     document.querySelector("body").classList.add(MODULE_SHORT); 
     
-    /**
-     * Register each of the settings defined in the SETTINGS constant 
-     */
+    /* Register each of the settings defined in the SETTINGS constant */
     const settingsList = Object.entries(SETTINGS);
     settingsList.forEach(async(entry) => {
       const setting = entry[1]; 

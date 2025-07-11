@@ -125,7 +125,7 @@ export class RollUtil{
 
     // config specific to attack rolls
     config.roll.flags.rsr5e = { processed: true  };
-    config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user}); 
+    // config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user}); 
     config.roll.flags.dnd5e.roll = { type: ROLL_TYPES.attack }; 
 
     // LogUtil.log("triggerAttack", [config, selectedActivity]);
@@ -273,9 +273,9 @@ export class RollUtil{
 
     }
 
-    usageResults.message.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user});
+    // usageResults.message.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user});
     usageResults.message.flags = usageResults.message.flags ?? {};
-    usageResults.message.rolls = activityRolls;
+    // usageResults.message.rolls = activityRolls;
     LogUtil.log("triggerAttack - before card", [activityRolls, usageResults.message]);  
 
     if(!isMidiOn){
@@ -418,7 +418,7 @@ export class RollUtil{
         quickRoll: false
       }
   
-      config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user});
+      // config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user});
       config.roll.flags.dnd5e.roll = { type: ROLL_TYPES.damage }; 
       config.message.flags = config.roll.flags;
       config.message.flags = {
@@ -531,7 +531,7 @@ export class RollUtil{
 
     // config specific to damage rolls
     config.roll.flags.dnd5e.roll = { type: ROLL_TYPES.healing };
-    config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user});
+    // config.roll.flags.dnd5e.targets = GeneralUtil.getTargetDescriptors({user: config.message.user});
     // config.message.flags = config.roll.flags;
     config.message.flags = {
       ...config.message,
@@ -584,22 +584,18 @@ export class RollUtil{
     return roll;
   }
 
-  // static replaceDie(roll, replacer){
-  //   if(!replacer || !roll){ return roll; }
-  //   const replacerDice = replacer.terms.filter(t=>t.class === 'Die') || [];
-  //   const noDice = roll?.terms.filter(t=>t.class !== 'Die') || [];
-  //   roll.terms = [...replacerDice, ...noDice];
-
-  //   roll._total = roll._evaluateTotal();
-  //   roll.resetFormula();
-  //   return roll;
-  // }
-
   static replaceDie(roll, replacer){
     if(!replacer || !roll){ return roll; }
     LogUtil.log("replaceDie", [replacer, roll]);
-    const replacerDice = replacer.terms.filter(t=>t instanceof Die || t.class === 'Die') || [];
-    const noDice = roll?.terms.filter(t=>!(t instanceof Die || t.class === 'Die')) || [];
+    
+    // Check if replacer.terms exists before trying to filter it
+    if (!replacer.terms) {
+      LogUtil.error("replaceDie - replacer.terms is undefined", [replacer]);
+      return roll;
+    }
+    
+    const replacerDice = replacer.terms.filter(t => t instanceof Die || t.class === 'Die') || [];
+    const noDice = roll?.terms?.filter(t => !(t instanceof Die || t.class === 'Die')) || [];
     roll.terms = [...replacerDice, ...noDice];
 
     roll._total = roll._evaluateTotal();

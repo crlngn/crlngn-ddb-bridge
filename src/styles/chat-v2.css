@@ -79,7 +79,7 @@ body.crlngn-chat {
   :is(.chat-popout, #chat-log) .chat-message .ddb-game-log-chat-card .ddb-card-content a.inline-roll {
     border-radius: 6px;
     border: none;
-    color: var(--color-warm-2); 
+    color: var(--color-highlights); 
   }
   .chat-message, .chat-message.whisper {
     border-radius: 6px;
@@ -319,29 +319,34 @@ body.crlngn-chat {
   }
   
   /* card button layout */
-  .chat-card .card-buttons:not(.midi-buttons) {
+  .chat-card .card-buttons,
+  .chat-card .midi-buttons {
     flex-direction: row; 
     flex-wrap: wrap; 
   }
   .chat-card .card-buttons {
     gap: 0.25em;
   }
-  .chat-card .card-buttons:not(.midi-buttons) > button {
-    /*flex: 1 1 calc((100% - 10px) / 2);
-    min-width: calc((100% - 10px) / 2);
-    width: 100%;*/
+  .chat-card .card-buttons > button,
+  .chat-card .card-buttons .midi-qol-attack-buttons,
+  .chat-card .card-buttons .midi-qol-damage-buttons {
     flex: 1 1 auto;
-    min-width: calc(50% - 5px);
+    min-width: calc((100% - 10px) / 2);
     width: auto;
+    font-size: var(--font-size-12);
+    span{
+      font-size: var(--font-size-12);
+    }
   }
-  .chat-card .card-buttons button[data-action=rollRequest] {
-    flex: 1 1 calc(100%);
+  .chat-card .card-buttons > button[data-action=rollRequest] {
+    flex: 1 1 auto;
     min-width: calc(100%);
-    width: 100%;
+    width: auto;
   }
   
 
-  .chat-message .rsr-title dnd5e-icon {
+  .chat-message .rsr-title dnd5e-icon,
+  .chat-message button[data-type=skill] dnd5e-icon {
     display: none;
   }
   .chat-message .card-buttons > button[data-action=rollAttack],
@@ -354,6 +359,10 @@ body.crlngn-chat {
       content: '\2694';
       font-size: var(--font-size-16);
       color: var(--color-text-dark-1);
+      
+    }
+    &:hover:before{
+      color: var(--color-light-1);
     }
   }
 
@@ -367,6 +376,22 @@ body.crlngn-chat {
       /*font-family: var(--font-awesome);*/
       font-size: var(--font-size-16);
       color: var(--color-text-dark-1);
+    }
+
+    &:hover:before{
+      color: var(--color-light-1);
+    }
+  }
+
+  .chat-message button[data-type=skill] {
+    &:before{
+      content: '\f552';
+      font-family: var(--font-awesome);
+      font-size: var(--font-size-12);
+      color: var(--color-text-dark-1);
+    }
+    &:hover:before{
+      color: var(--color-light-1);
     }
   }
 
@@ -427,7 +452,7 @@ body.crlngn-chat {
   &.system-dnd5e .chat-card .card-buttons > button span:before {
     content: "";
     display: flex;
-    font-size: 0.65rem;
+    font-size: var(--font-size-12);
   }
 /*
   &.system-dnd5e .chat-card {
@@ -486,13 +511,13 @@ body.crlngn-chat {
     content: attr(data-ability) " " var(--crlngn-i18n-save-dc) " " attr(data-dc);
     text-transform: uppercase;
     display: flex;
-    font-size: 0.65rem;
+    font-size: var(--font-size-12);
   }
   .chat-card .card-buttons button[data-action=rollSave] span.hidden-dc:after {
     content: attr(data-ability,'') " " var(--crlngn-i18n-save,'');
     text-transform: uppercase;
     display: flex;
-    font-size: 0.65rem;
+    font-size: var(--font-size-12);
   }
   
   :is(.card-tray, .effects-tray) .effects .effect:not(:last-child),
@@ -507,12 +532,11 @@ body.crlngn-chat {
   :is(.card-tray, .effects-tray) button:not(.unbutton),
   .chat-card button:not(.unbutton){
     min-height: 36px;
-    height: 36px;
     font-size: 11px;
     padding: 5px;
     border: 1px solid var(--color-dark-bg-15);
     margin: 2px 0 0 0;
-    width: 100%;
+    width: auto;
     line-height: 1.25;
     display: flex;
     align-items: center;
@@ -572,7 +596,7 @@ body.crlngn-chat {
       --dnd5e-color-failure-background: rgba(209, 67, 67, 0.35);
       --dnd5e-text-color-success: #c1e6a7;
       --dnd5e-text-color-failure: #d8aeae;
-      --dnd5e-color-crimson: var(--color-warm-2);
+      --dnd5e-color-crimson: var(--color-highlights-75);
     }
 
     .chat-message p,
@@ -797,8 +821,8 @@ body.crlngn-chat {
     .dnd5e-theme-dark button:not(.pip):hover,
     .chat-message .message-content button:not(.unbutton):hover,
     .chat-message .message-content button:not(.unbutton):focus {
-      border-color: var(--color-warm-2);
-      /*background: var(--color-dark-1);*/
+      border-color: var(--color-highlights, #000);
+      background: var(--color-highlights);
       color: var(--color-text-gray-blue);
     }
   
@@ -807,7 +831,7 @@ body.crlngn-chat {
     :is(.card-tray, .effects-tray) .target-source-control button[aria-pressed="true"], 
     .card-tray .target-source-control button[aria-pressed="true"],
     .chat-message .message-content button:hover {
-      background: var(--color-dark-bg-75);
+      background: var(--color-dark-bg-75, transparent);
       border: 1px solid transparent;
       opacity: 1;
       color: var(--color-light-1);
@@ -843,24 +867,30 @@ body.crlngn-chat {
       border: 1px solid var(--color-dark-bg-50);
       color: var(--color-text-dark); 
       line-height: 1.25;
-      height: 36px;
+      min-height: 36px;
     }
-    :is(.card-tray, .effects-tray) button:hover {
+    :is(.card-tray, .effects-tray) button:hover,
+    :is(.card-tray, .effects-tray) button:focus {
+      background: var(--color-highlights);
       box-shadow: none;
     }
 
     .chat-message .chat-card > button[data-action=rollAttack],
     .chat-message .card-buttons > button[data-action=rollAttack],
     .chat-message .card-buttons > button[data-action=rollHealing],
+    .chat-message .card-buttons > button[data-type=skill],
     .chat-message .chat-card .rsr-title {
       &:before{
+        color: var(--color-text-light-1, var(--color-light-1));
+      }
+      &:hover:before{
         color: var(--color-text-light-1, var(--color-light-1));
       }
     }
     
     .dnd5e2:not(.chat-card, .create-document) button:not(.pip):focus, 
     .dnd5e2.dnd5e-theme-dark button:not(.pip):focus {
-      border: 1px solid var(--color-warm-2);
+      border: 1px solid var(--color-highlights);
     }
 
     .dnd5e2 :is(.card-tray, .effects-tray) .targets .target .change-source > * , 

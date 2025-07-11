@@ -29,6 +29,19 @@ export class ChatUtil {
       if(chatStyles.flags?.["ddb-game-log"]){
         html.classList.add('ddbgl');
       }
+
+      const saveButtons = elem.querySelectorAll('.card-buttons button[data-action=rollSave]');
+      if (saveButtons.length > 0) {      
+        saveButtons.forEach(button => {
+          const visibleDCSpan = button.querySelector('.visible-dc');
+          const hiddenDCSpan = button.querySelector('.hidden-dc');
+          LogUtil.log("enrichCard",[visibleDCSpan, hiddenDCSpan]);
+
+          visibleDCSpan.setAttribute('data-ability', button.getAttribute('data-ability') || "");
+          visibleDCSpan.setAttribute('data-dc', button.getAttribute('data-dc') || "");
+          hiddenDCSpan.setAttribute('data-ability', button.getAttribute('data-ability') || "");
+        });
+      }
   
     }  
   }

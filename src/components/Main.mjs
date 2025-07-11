@@ -104,6 +104,7 @@ export class Main {
     Hooks.on(HOOKS_DND5E.PRE_ROLL_ATTACK_V2, onPreRollAttack);
     Hooks.on(HOOKS_DND5E.PRE_ROLL_DAMAGE_V2, onPreRollDamage);
     Hooks.on(HOOKS_DND5E.PRE_ROLL_SAVING_THROW, onPreRollSavingThrow);
+    // Hooks.on(HOOKS_CORE.RENDER_ROLL_RESOLVER, RollUtil.onRenderRollResolver);
   }
 
   /**
@@ -198,7 +199,7 @@ const onPostUseActivity = async(
  */
 const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
   const SETTINGS = getSettings();
-  let isDDBGL = false;
+  let isDdbGl = false;
   let actor, ddbglCls, itemId, item, isProcessed=false;
   
   let msg = chatMessage;
@@ -214,8 +215,9 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
     itemId =  msgConfig.flags?.["ddb-game-log"]?.["itemId"] || ""; 
     msg.rolls = msg.rolls && msg.rolls.length > 0 ? [msg.rolls[0]] : [msgConfig.rolls[0]] || [];
 
+    LogUtil.log("onPreCreateChatMessage", [msg.flags, msgConfig.flags]);
     if(actor){
-      isDDBGL = true; 
+      isDdbGl = true; 
       msg.flags = {
         ...msg.flags,
         ...msgConfig.flags
@@ -250,8 +252,8 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
           const serializedMsg = SocketUtil.serializeForTransport(msg);
           LogUtil.log("Main - After serialization", [serializedMsg]);
           LogUtil.log("CHECK ROLL", [playerMakesRoll, user, serializedMsg, msgConfig]);
-          // SocketUtil.execAsUser('DDBRoll', user.id, ddbglCls, itemId, actionName, msg, msgConfig); 
-          SocketUtil.execAsUser('DDBRoll', user.id, ddbglCls, itemId, actionName, serializedMsg, msgConfig); 
+          // SocketUtil.execForUser('DDBRoll', user.id, ddbglCls, itemId, actionName, msg, msgConfig); 
+          SocketUtil.execForUser('DDBRoll', user.id, ddbglCls, itemId, actionName, serializedMsg, msgConfig); 
         }else{
           LogUtil.log("Main - No serialization", [msg]);
           RollUtil.streamlineDDBRoll(ddbglCls, itemId, actionName, msg, msgConfig);
@@ -263,7 +265,7 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
     }
   }
 
-  return !isDDBGL || isProcessed;
+  return !isDdbGl || isProcessed;
 }
 
 const onCreateChatMessage = (chatMessage, options, userId) => {

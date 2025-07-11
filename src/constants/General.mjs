@@ -1,8 +1,8 @@
 export const MODULE_ID = "crlngn-ddb-bridge";
-export const MODULE_TITLE = "Carolingian DDB Bridge";
+export const MODULE_TITLE = "DDB Gamelog Bridge";
 export const MODULE_SHORT = "crlngn-ddb-bridge";
 export const DEBUG_TAG = [
-  `%cCarolingian DDB Bridge`,
+  `%cDDB Gamelog Bridge`,
   `color: #003377; font-weight: bold;`,
   `|`,
 ];
