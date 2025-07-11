@@ -167,14 +167,14 @@ export class GeneralUtil {
    * @param {string} varValue 
    */
   static addCSSVars = (varName, varValue) => {
-    let bodyStyle = document.querySelector('#crlngn-chat-vars');
+    let bodyStyle = document.querySelector('#crlngn-ddbgl-chat-vars');
     
     if (!bodyStyle) {
       // Create style element if it doesn't exist
       const body = document.querySelector('body');
       bodyStyle = document.createElement('style');
-      bodyStyle.id = 'crlngn-chat-vars';
-      bodyStyle.textContent = 'body.crlngn-chat {\n}\n';
+      bodyStyle.id = 'crlngn-ddbgl-chat-vars';
+      bodyStyle.textContent = 'body.crlngn-ddbgl-chat {\n}\n';
       body.prepend(bodyStyle);
     }
     
@@ -182,18 +182,18 @@ export class GeneralUtil {
     let cssText = bodyStyle.textContent;
     
     // Find or create the rule block
-    let ruleStart = cssText.indexOf('body.crlngn-chat {');
+    let ruleStart = cssText.indexOf('body.crlngn-ddbgl-chat {');
     let ruleEnd = cssText.indexOf('}', ruleStart);
     
     if (ruleStart === -1) {
       // If rule doesn't exist, create it
-      cssText = 'body.crlngn-chat {\n}\n';
+      cssText = 'body.crlngn-ddbgl-chat {\n}\n';
       ruleStart = 0;
       ruleEnd = cssText.indexOf('}');
     }
     
     // Get all the current declarations
-    const rulePart = cssText.substring(ruleStart + 'body.crlngn-chat {'.length, ruleEnd);
+    const rulePart = cssText.substring(ruleStart + 'body.crlngn-ddbgl-chat {'.length, ruleEnd);
     
     // Split by semicolons to get individual declarations
     const declarations = rulePart.split(';')
@@ -232,7 +232,7 @@ export class GeneralUtil {
     // Rebuild the entire CSS
     const newCss = 
       cssText.substring(0, ruleStart) + 
-      'body.crlngn-chat {\n' + 
+      'body.crlngn-ddbgl-chat {\n' + 
       newRuleContent + 
       '\n}' + 
       cssText.substring(ruleEnd + 1);

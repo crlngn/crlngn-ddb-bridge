@@ -44,7 +44,13 @@ export class SettingsUtil {
 
     // apply chat style settings
     if(!SettingsUtil.get(SETTINGS.enableChatStyles.tag)){ 
-      document.querySelector("body").classList.remove("crlngn-chat"); 
+      document.querySelector("body").classList.remove("crlngn-ddbgl-chat"); 
+    }else{
+      if(game.version.startsWith("12")){
+        document.querySelector("body").classList.add("v12");
+      }else if(game.version.startsWith("13")){
+        document.querySelector("body").classList.add("v13");
+      }
     }
 
     //apply debug Settings

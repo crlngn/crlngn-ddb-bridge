@@ -51,7 +51,12 @@ export class Main {
     Hooks.once(HOOKS_CORE.INIT,()=>{
       Main.isMidiOn = GeneralUtil.isModuleOn("midi-qol");
       LogUtil.log("Initiating module", [], true);
-      document.querySelector("body").classList.add("crlngn-chat"); //add here for better rendering, remove later if needed
+      document.querySelector("body").classList.add("crlngn-ddbgl-chat"); //add here for better rendering, remove later if needed
+      if(game.version.startsWith("12")){
+        document.querySelector("body").classList.add("v12");
+      }else if(game.version.startsWith("13")){
+        document.querySelector("body").classList.add("v13");
+      }
       
       SettingsUtil.registerSettings();
       Main.registerActivityHooks();

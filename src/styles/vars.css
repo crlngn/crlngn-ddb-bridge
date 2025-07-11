@@ -5,7 +5,7 @@ Main Theme
 /* ---------------------------------------- */
 /*  Colors                                  */
 /* ---------------------------------------- */
-body.crlngn-chat {
+body.crlngn-ddbgl-chat {
    /* colors */ 
 	--color-text-hyperlink: var(--color-shadow-highlight);/* #00aaaa;*/
 	--color-control-bg: rgba(255,255,255,0.35);
