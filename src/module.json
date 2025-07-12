@@ -1,17 +1,18 @@
 {
   "id": "crlngn-ddb-bridge",
-  "title": "DDB Gamelog Bridge",
-  "version": "2.1.5",
+  "title": "DDB Gamelog Tweaks",
+  "version": "3.0.0",
   "description": "Adds DDB Gamelog support for DnD 4.x and streamlines roll functionality",
   "url": "https://github.com/crlngn/crlngn-ddb-bridge",
   "manifest": "https://github.com/crlngn/crlngn-ddb-bridge/releases/latest/download/module.json",
-  "download": "https://github.com/crlngn/crlngn-ddb-bridge/releases/download/v2.1.5/module.zip",
+  "download": "https://github.com/crlngn/crlngn-ddb-bridge/releases/download/v3.0.0/module.zip",
   "bugs": "https://github.com/crlngn/crlngn-ddb-bridge/issues",
   "readme": "https://github.com/crlngn/crlngn-ddb-bridge/main/README.md",
   "license": "https://mit-license.org/",
   "compatibility": {
-    "minimum": "12.328",
-    "verified": "13.346"
+    "minimum": "13.329",
+    "verified": "13.346",
+    "maximum": "13.999"
   },
   "authors": [
     {

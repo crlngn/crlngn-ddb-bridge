@@ -31,7 +31,7 @@
 
         {{{tooltipHtml}}}
         
-        <h4 class="dice-total">{{{total}}}</h4>
+        <h4 class="dice-total{{#if this.isSuccess}} success{{else if this.isFailure}} failure{{/if}}">{{{total}}}</h4>
       </div>
       {{/each}}
     </section>

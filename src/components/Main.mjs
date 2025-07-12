@@ -52,11 +52,6 @@ export class Main {
       Main.isMidiOn = GeneralUtil.isModuleOn("midi-qol");
       LogUtil.log("Initiating module", [], true);
       document.querySelector("body").classList.add("crlngn-ddbgl-chat"); //add here for better rendering, remove later if needed
-      if(game.version.startsWith("12")){
-        document.querySelector("body").classList.add("v12");
-      }else if(game.version.startsWith("13")){
-        document.querySelector("body").classList.add("v13");
-      }
       
       SettingsUtil.registerSettings();
       Main.registerActivityHooks();
@@ -250,6 +245,8 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
         // destructure the roll before sending via socket
         // msgConfig = JSON.stringify(msgConfig);
         // msg.rolls = msg.rolls.map(roll => roll.toJSON());
+
+        LogUtil.log("Main - onPreCreateChatMessage", [msg, user, playerMakesRoll]);
 
         // Forward the action to a player or keep it on GM depending on current settings
         if(user && playerMakesRoll){

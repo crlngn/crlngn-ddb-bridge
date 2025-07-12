@@ -1,4 +1,4 @@
-**Latest Version:** 2.1.5
+**Latest Version:** 3.0.0
 
 **Requirements:** 
 - Foundry VTT version 12.328 to 12.331
@@ -11,7 +11,7 @@ This update adds socket support. Reload your world after updating the module fro
 
 [auto-template-target-saves-b.webm](https://github.com/user-attachments/assets/6e7a39eb-ef04-46e7-9c94-e22365e546b2)
 
-## DDB Gamelog Bridge
+## DDB Gamelog Tweaks
 This module adds features and compatibility to [DDB Gamelog](https://github.com/IamWarHead/ddb-game-log/) by **Warhead**. It allows users to use core Foundry/DnD5e features, like application of effects and quick chat buttons, while using Warhead's DDB Gamelog module to roll from D&D Beyond, making life a bit easier for the DM. 
 DDB Gamelog currently offers limited support for DnD5e 4.x and does not offer native activity capabilities, so I am bridging this gap. 
 
@@ -19,7 +19,7 @@ From version 2.x, DDB Bridge requires socketlib, so rolls can be made on each us
 
 Some features like the chat message styling and template auto-target do not depend on Gamelog Pro tier to work. If you are only interested in dark style for chat messages, try my module Carolingian UI.
 
-While **DDB Gamelog Bridge module** is free to use and distribute, **DDB Gamelog** is a different module which has a Free tier and a Pro tier with different features. Many features of my module will only work for Pro tier users of DDB Gamelog. **Warhead** is not responsible for maintaining the module in this repo, please don't bother him with requests. 
+While **DDB Gamelog Tweaks module** is free to use and distribute, **DDB Gamelog** is a different module which has a Free tier and a Pro tier with different features. Many features of my module will only work for Pro tier users of DDB Gamelog. **Warhead** is not responsible for maintaining the module in this repo, please don't bother him with requests. 
 
 
 ### IMPORTANT:

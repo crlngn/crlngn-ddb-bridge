@@ -71,7 +71,7 @@ export class ActivityUtil {
    * @param {ActivityMessageConfiguration} message  Configuration info for the created chat message.
    * @returns {Promise<ActivityUsageResults|void>}  Details on the usage process if not canceled.
    */
-  static async ddbglUse(activity, usage={}, dialog={}, message={}, triggerFinalActions=false) {
+  static async ddbglUse(activity, usage={}, dialog={}, message={}) {
     if(!activity){
       ui.notifications.error("No activity found", { localize: false });
       return;
@@ -129,6 +129,15 @@ export class ActivityUtil {
      */
     if ( Hooks.call("dnd5e.preUseActivity", activity, usageConfig, dialogConfig, messageConfig) === false ) return;
 
+    // Display configuration window if necessary
+    if ( dialogConfig.configure && activity._requiresConfigurationDialog(usageConfig) ) {
+      try {
+        await dialogConfig.applicationClass.create(activity, usageConfig, dialogConfig.options);
+      } catch(err) {
+        return;
+      }
+    }
+
     // Handle scaling
     await activity._prepareUsageScaling(usageConfig, messageConfig, item);
     activity = item.system.activities.get(activity.id);
@@ -153,17 +162,23 @@ export class ActivityUtil {
       }
     }
 
+
     // Create chat message
     messageConfig.data.rolls = (messageConfig.data.rolls ?? []).concat(updates.rolls);
+    
+
+    // activity._finalizeMessageConfig(usageConfig, messageConfig, results);
     results.message = await ActivityUtil.createUsageMessage(activity, messageConfig);
 
-    LogUtil.log("messageConfig", [ message, results.message]);
+    LogUtil.log("messageConfig", [ messageConfig, results.message]);
+
     results.message.dnd5e = messageConfig.flags?.dnd5e ?? {};
     results.message.dnd5e.targets = GeneralUtil.getTargetDescriptors({ actorId: results.message.speaker.actor });
     results.message.flags = {
       ...results.message.flags, 
       rsr5e: { processed: true }
     }
+    LogUtil.log("ddbglUse", [results.message]);
 
     // Perform any final usage steps
     await activity._finalizeUsage(usageConfig, results); 
@@ -171,12 +186,120 @@ export class ActivityUtil {
     if ( Hooks.call("dnd5e.postUseActivity", activity, usageConfig, results) === false ) return results;
 
     // Trigger any primary action provided by this activity
-    if(triggerFinalActions && activity._triggerSubsequentActions){
+    if(usageConfig.subsequentActions !== false){
       activity._triggerSubsequentActions(usageConfig, results);
     }
 
     return results; 
   }
+
+  // static async use(usage={}, dialog={}, message={}) {
+  //   if ( !this.item.isEmbedded || this.item.pack ) return;
+  //   if ( !this.item.isOwner ) {
+  //     ui.notifications.error("DND5E.DocumentUseWarn", { localize: true });
+  //     return;
+  //   }
+  //   if ( !this.canUse ) {
+  //     ui.notifications.error("DND5E.ACTIVITY.Warning.UsageNotAllowed", { localize: true });
+  //     return;
+  //   }
+
+  //   // Create an item clone to work with throughout the rest of the process
+  //   let item = this.item.clone({}, { keepId: true });
+  //   let activity = item.system.activities.get(this.id);
+
+  //   const usageConfig = activity._prepareUsageConfig(usage);
+
+  //   const dialogConfig = foundry.utils.mergeObject({
+  //     configure: true,
+  //     applicationClass: this.metadata.usage.dialog
+  //   }, dialog);
+
+  //   const messageConfig = foundry.utils.mergeObject({
+  //     create: true,
+  //     data: {
+  //       flags: {
+  //         dnd5e: {
+  //           ...this.messageFlags,
+  //           messageType: "usage",
+  //           use: {
+  //             effects: this.applicableEffects?.map(e => e.id)
+  //           }
+  //         }
+  //       }
+  //     },
+  //     hasConsumption: usageConfig.hasConsumption
+  //   }, message);
+
+  //   /**
+  //    * A hook event that fires before an activity usage is configured.
+  //    * @function dnd5e.preUseActivity
+  //    * @memberof hookEvents
+  //    * @param {Activity} activity                           Activity being used.
+  //    * @param {ActivityUseConfiguration} usageConfig        Configuration info for the activation.
+  //    * @param {ActivityDialogConfiguration} dialogConfig    Configuration info for the usage dialog.
+  //    * @param {ActivityMessageConfiguration} messageConfig  Configuration info for the created chat message.
+  //    * @returns {boolean}  Explicitly return `false` to prevent activity from being used.
+  //    */
+  //   if ( Hooks.call("dnd5e.preUseActivity", activity, usageConfig, dialogConfig, messageConfig) === false ) return;
+
+  //   // Display configuration window if necessary
+  //   if ( dialogConfig.configure && activity._requiresConfigurationDialog(usageConfig) ) {
+  //     try {
+  //       await dialogConfig.applicationClass.create(activity, usageConfig, dialogConfig.options);
+  //     } catch(err) {
+  //       return;
+  //     }
+  //   }
+
+  //   // Handle scaling
+  //   await activity._prepareUsageScaling(usageConfig, messageConfig, item);
+  //   activity = item.system.activities.get(this.id);
+
+  //   // Handle consumption
+  //   const updates = await activity.consume(usageConfig, messageConfig);
+  //   if ( updates === false ) return;
+  //   const results = { effects: [], templates: [], updates };
+
+  //   // Create concentration effect & end previous effects
+  //   if ( usageConfig.concentration?.begin ) {
+  //     const effect = await item.actor.beginConcentrating(activity, { "flags.dnd5e.scaling": usageConfig.scaling });
+  //     if ( effect ) {
+  //       results.effects ??= [];
+  //       results.effects.push(effect);
+  //       foundry.utils.setProperty(messageConfig.data, "flags.dnd5e.use.concentrationId", effect.id);
+  //     }
+  //     if ( usageConfig.concentration?.end ) {
+  //       const deleted = await item.actor.endConcentration(usageConfig.concentration.end);
+  //       results.effects.push(...deleted);
+  //     }
+  //   }
+
+  //   // Create chat message
+  //   activity._finalizeMessageConfig(usageConfig, messageConfig, results);
+  //   results.message = await activity._createUsageMessage(messageConfig);
+
+  //   // Perform any final usage steps
+  //   await activity._finalizeUsage(usageConfig, results);
+
+  //   /**
+  //    * A hook event that fires when an activity is activated.
+  //    * @function dnd5e.postUseActivity
+  //    * @memberof hookEvents
+  //    * @param {Activity} activity                     Activity being activated.
+  //    * @param {ActivityUseConfiguration} usageConfig  Configuration data for the activation.
+  //    * @param {ActivityUsageResults} results          Final details on the activation.
+  //    * @returns {boolean}  Explicitly return `false` to prevent any subsequent actions from being triggered.
+  //    */
+  //   if ( Hooks.call("dnd5e.postUseActivity", activity, usageConfig, results) === false ) return results;
+
+  //   // Trigger any primary action provided by this activity
+  //   if ( usageConfig.subsequentActions !== false ) {
+  //     activity._triggerSubsequentActions(usageConfig, results);
+  //   }
+
+  //   return results;
+  // }
 
   /* -------------------------------------------- */
   /**
@@ -225,11 +348,19 @@ const _buildRollData = async(rolls, activity) => {
 
   rollData = await Promise.all(rolls.map(async(r)=>{
     const tooltipHtml = await r.getTooltip();
+    // Check if roll has a target and determine success/failure
+    const hasTarget = Number.isNumeric(r.options?.target);
+    const isSuccess = hasTarget && r.total >= r.options.target;
+    const isFailure = hasTarget && r.total < r.options.target;
+    
     return {
       ...r,
       formula: r.formula,
       total: r.total,
-      tooltipHtml: tooltipHtml
+      tooltipHtml: tooltipHtml,
+      isSuccess: isSuccess,
+      isFailure: isFailure,
+      hasTarget: hasTarget
     }
   }));
   // LogUtil.log("_buildRollData / rollData",[rollData]);

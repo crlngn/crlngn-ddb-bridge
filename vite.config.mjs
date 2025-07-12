@@ -26,6 +26,7 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       input: "src/module.mjs",
+      external: [/^\.\.\/\.\.\/dnd5e/],
       output: {
         dir: "dist/",
         entryFileNames:"scripts/module.js",

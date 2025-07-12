@@ -14,7 +14,7 @@
 
       "ddbRollOwnership":{
         "label": "Roll Ownership",
-        "hint": "If you select Game master, the GM will be prompted to place templates for spells when needed. Option 2 will look for the user this actor is assigned to - if there is none, it will look for any user with 'owner' permission. Defaults to GM if no player is found.",
+        "hint": "This determines which user is considered for targets and templates. If you select Game master, the GM will be prompted to place templates for spells. Otherwise, it will look for the user this actor is assigned to - if there is none, it will look for any user with 'owner' permission. Defaults to GM if no player is found.",
         "choices": {
           "gm": {
             "label": "Game master"

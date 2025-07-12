@@ -24,35 +24,17 @@ jobs:
           echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Update module.json with the Release Version
+      # Version updates are handled by the npm run bump script before release
+
+      - name: Get Compatibility Versions
+        id: get_compatibility
         run: |
-          jq --arg version "$VERSION" '.version = $version' dist/module.json > temp.json && mv temp.json dist/module.json
-
-      - name: Update README.md with the Latest Version
-        run: |
-          sed -i "1s/\*\*Latest Version:\*\* .*/\*\*Latest Version:\*\* $VERSION/" README.md
-
-      - name: Update package.json with the Latest Version
-        run: |
-          jq --arg version "$VERSION" '.version = $version' package.json > temp.json && mv temp.json package.json
-
-      - name: Commit and Push Version Updates
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-          
-          git fetch --all
-
-          # Detect the default branch
-          DEFAULT_BRANCH=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
-          echo "Default branch detected: $DEFAULT_BRANCH"
-
-          # Switch to the default branch before committing
-          git checkout $DEFAULT_BRANCH || git checkout -b $DEFAULT_BRANCH
-
-          git add README.md package.json
-          git commit -m "Update README and package.json to version $VERSION" || echo "No changes to commit"
-          git push origin $DEFAULT_BRANCH
+          MIN_VERSION=$(jq -r .compatibility.minimum src/module.json)
+          VERIFIED_VERSION=$(jq -r .compatibility.verified src/module.json)
+          MAX_VERSION=$(jq -r .compatibility.maximum src/module.json)
+          echo "MIN_VERSION=$MIN_VERSION" >> $GITHUB_ENV
+          echo "VERIFIED_VERSION=$VERIFIED_VERSION" >> $GITHUB_ENV
+          echo "MAX_VERSION=$MAX_VERSION" >> $GITHUB_ENV
 
       - name: Prepare Release Artifacts
         run: |
@@ -66,6 +48,7 @@ jobs:
           files: |
             module.zip
             dist/module.json
+            news/module-updates.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -84,8 +67,9 @@ jobs:
                 "manifest": "https://github.com/${{ github.repository }}/releases/latest/download/module.json",
                 "notes": "https://github.com/${{ github.repository }}/releases/tag/v'"$VERSION"'",
                 "compatibility": {
-                  "minimum": "12.328",
-                  "verified": "12.331"
+                  "minimum": "${{env.MIN_VERSION}}",
+                  "verified": "${{env.VERIFIED_VERSION}}",
+                  "maximum": "${{env.MAX_VERSION}}"
                 }
               }
             }')
@@ -121,12 +105,12 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
           args: |
-            **New Release!**
+            **New Release for DDB Gamelog Tweaks**
             
             **Repository:** ${{ github.repository }}
             **Version:** ${{ github.ref_name }}
             
             ${{ fromJson(steps.get_release.outputs.result).body }}
             
-            **Release:** https://github.com/${{ github.repository }}/releases/tag/v${{ github.ref_name }}
-            **Manifest URL:** https://github.com/${{ github.repository }}/releases/download/v${{ github.ref_name }}/module.json
+            **Release:** https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}
+            **Manifest URL:** https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/module.json
