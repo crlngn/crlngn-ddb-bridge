@@ -14,6 +14,8 @@ export class Main {
   static keysPressed = [];
   static isMidiOn = false;
   static areKeysPressed;
+  static throttleTimers = {};
+  static templateTargeting = 0;
 
   static init(){
     Main.setupKeyListeners();
@@ -68,6 +70,7 @@ export class Main {
         return;
       }
 
+      Main.templateTargeting = SettingsUtil.get("template-auto-target");
       SettingsUtil.resetGamelogSettings();
       Main.registerSocketFunction();
       Main.addCSSLocalization();
@@ -206,8 +209,8 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
   ddbglCls = GeneralUtil.isModuleOn("ddb-game-log") ? chatMessage.getFlag("ddb-game-log","cls")?.toLowerCase() || "" : ""; // does the flag exist?
   isProcessed = chatMessage.getFlag(MODULE_SHORT, "processed") || false; 
 
-  LogUtil.log(HOOKS_CORE.PRE_CREATE_CHAT_MESSAGE, [ 
-    ddbglCls, msg, msgConfig, options
+  LogUtil.log("onPreCreateChatMessage #A", [ 
+    ddbglCls, isProcessed
   ]);
 
   if(ddbglCls && !isProcessed){ 
@@ -215,7 +218,7 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
     itemId =  msgConfig.flags?.["ddb-game-log"]?.["itemId"] || ""; 
     msg.rolls = msg.rolls && msg.rolls.length > 0 ? [msg.rolls[0]] : [msgConfig.rolls[0]] || [];
 
-    LogUtil.log("onPreCreateChatMessage", [msg.flags, msgConfig.flags]);
+    LogUtil.log("onPreCreateChatMessage #B", [msg.flags, msgConfig.flags]);
     if(actor){
       isDdbGl = true; 
       msg.flags = {
@@ -260,6 +263,7 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
           LogUtil.log("Main - No serialization", [msg]);
           RollUtil.streamlineDDBRoll(ddbglCls, itemId, actionName, msg, msgConfig);
         }
+
       }
     }else{ 
       LogUtil.warn("Could not find the actor from DDB Gamelog roll");
@@ -290,6 +294,7 @@ const onPreRoll = (rollConfig, dialogConfig, messageConfig) => {
 
   // dialogConfig.configure = false;
   dialogConfig.configure = RollUtil.getDialogSetting(dialogConfig.configure, rollConfig);
+  LogUtil.log("dialog configure", [dialogConfig.configure]);
 
   return;
 }
@@ -325,6 +330,7 @@ const onPreRollAttack = (
 const onPreRollDamage = (
   config, dialogConfig, message
 ) =>{
+  Main.templateTargeting = SettingsUtil.get("template-auto-target");
   LogUtil.log(HOOKS_DND5E.PRE_ROLL_DAMAGE_V2, [config, dialogConfig, message, Main.keysPressed]);
   // By default, configuration dialog is disabled to speed up roll
   // Allow configuration if Shift key is pressed
@@ -338,7 +344,6 @@ const onRollDamage = (
   config, dialogConfig, message
 ) =>{
   LogUtil.log(HOOKS_DND5E.ROLL_DAMAGE_V2, [game]);
-  // canvas.templates.deleteMany(canvas.templates.placeables.map(o =>o.id),{});
 }
 
 /**
@@ -364,22 +369,52 @@ const onRefreshTemplate = (template, options) => {
 
   if(!template.isOwner){ return; }
 
-  const templateTargeting = SettingsUtil.get("template-auto-target");
-  let maxDisposition = 3;
-
-  switch(templateTargeting){
-    case 1:
-      maxDisposition = 3; break;
-    case 2: 
-      maxDisposition = 0; break;
-    default: 
-      return;
+  // Throttle the template refresh to prevent excessive targeting updates
+  const throttleKey = `refresh-template-${template.id}`;
+  
+  // Clear any existing timeout for this template to prevent overlapping executions
+  if (Main.throttleTimers[throttleKey]) {
+    clearTimeout(Main.throttleTimers[throttleKey]);
   }
 
-  canvas.tokens.placeables[0]?.setTarget(false, { releaseOthers: true });
-  for(let token of canvas.tokens.placeables){
-    if(token.document.disposition <= maxDisposition && template.shape.contains(token.center.x-template.x,token.center.y-template.y)){
-      token.setTarget(!token.isTargeted, { releaseOthers: false });
+  // Set a new timeout to execute the targeting logic after a delay
+  Main.throttleTimers[throttleKey] = setTimeout(() => {
+    let maxDisposition = 3;
+
+    switch(Main.templateTargeting){
+      case 1:
+        maxDisposition = 3; break;
+      case 2: 
+        maxDisposition = 0; break;
+      default: 
+        return;
     }
-  }
+
+    // First, release all existing targets to ensure clean state
+    game.user.targets.forEach(t => t.setTarget(false, { releaseOthers: false }));
+    
+    // Then collect tokens that should be targeted
+    const tokensToTarget = [];
+    for(let token of canvas.tokens.placeables){
+      if(token.document.disposition <= maxDisposition && template.shape.contains(token.center.x-template.x,token.center.y-template.y)){
+        tokensToTarget.push(token);
+      }
+    }
+    
+    // Set all new targets with groupSelection for better synchronization
+    tokensToTarget.forEach((token, i) => {
+      token.setTarget(true, { 
+        releaseOthers: i === 0,  // Only release others on first token
+        groupSelection: true 
+      });
+    });
+    
+    // Broadcast the targeting update if any tokens were targeted
+    if (tokensToTarget.length > 0) {
+      game.user.broadcastActivity({ targets: game.user.targets.ids });
+    }
+    
+    // Clean up the timer reference
+    delete Main.throttleTimers[throttleKey];
+  }, 50); // Slightly longer throttle for better stability
 }

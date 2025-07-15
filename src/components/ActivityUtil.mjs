@@ -162,12 +162,10 @@ export class ActivityUtil {
       }
     }
 
-
     // Create chat message
     messageConfig.data.rolls = (messageConfig.data.rolls ?? []).concat(updates.rolls);
-    
 
-    // activity._finalizeMessageConfig(usageConfig, messageConfig, results);
+    activity._finalizeMessageConfig(usageConfig, messageConfig, results);
     results.message = await ActivityUtil.createUsageMessage(activity, messageConfig);
 
     LogUtil.log("messageConfig", [ messageConfig, results.message]);

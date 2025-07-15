@@ -3,7 +3,7 @@ export const MODULE_TITLE = "DDB Gamelog Tweaks";
 export const MODULE_SHORT = "crlngn-ddb-bridge";
 export const DEBUG_TAG = [
   `%cDDB Gamelog Tweaks`,
-  `color: #003377; font-weight: bold;`,
+  `color:rgb(100, 160, 238); font-weight: bold;`,
   `|`,
 ];
 
