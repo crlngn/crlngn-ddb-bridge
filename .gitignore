@@ -8,3 +8,4 @@ foundry-config.yaml
 CLAUDE.md
 /.claude
 .claude/
+.claude/*
