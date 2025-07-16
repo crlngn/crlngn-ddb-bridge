@@ -6,4 +6,5 @@ crlngn-ddb-bridge.code-workspace
 foundry-config.yaml
 
 CLAUDE.md
-.claude
+/.claude
+.claude/
