@@ -6,7 +6,8 @@
 - DDB Gamelog module by Warhead, version 2.2.0 to 2.4.0
 - Socketlib 1.x
 
-[auto-template-target-saves-b.webm](https://github.com/user-attachments/assets/6e7a39eb-ef04-46e7-9c94-e22365e546b2)
+[DDB Gamelog Tweaks](https://github.com/user-attachments/assets/6f8a3bde-7098-49d7-b987-8835e1f8196a)
+
 
 ## DDB Gamelog Tweaks
 This module adds features and compatibility to [DDB Gamelog](https://github.com/IamWarHead/ddb-game-log/) by **Warhead**. It allows users to use core Foundry/DnD5e features, like template triggering, application of effects, application of bonuses and quick chat buttons, while using Warhead's DDB Gamelog module to roll from D&D Beyond. 
