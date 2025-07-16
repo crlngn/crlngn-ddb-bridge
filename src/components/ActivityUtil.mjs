@@ -92,7 +92,7 @@ export class ActivityUtil {
     const usageConfig = activity._prepareUsageConfig(usage);
     
     if(usageConfig.create?.measuredTemplate){
-      ui.notifications?.info("Click the map to place the template and see the roll. Right click to cancel", { localize: false });
+      ui.notifications?.info(game.i18n.localize("CRLNGN.ui.notifications.clickMapToPlaceTemplate"));
     }
 
     const dialogConfig = foundry.utils.mergeObject({
@@ -161,6 +161,7 @@ export class ActivityUtil {
         results.effects.push(...deleted);
       }
     }
+    LogUtil.log("ddbglUse - messageConfig", [ messageConfig ]);
 
     // Create chat message
     messageConfig.data.rolls = (messageConfig.data.rolls ?? []).concat(updates.rolls);
@@ -168,7 +169,7 @@ export class ActivityUtil {
     activity._finalizeMessageConfig(usageConfig, messageConfig, results);
     results.message = await ActivityUtil.createUsageMessage(activity, messageConfig);
 
-    LogUtil.log("messageConfig", [ messageConfig, results.message]);
+    LogUtil.log("ddbglUse - messageConfig", [ messageConfig, results.message]);
 
     results.message.dnd5e = messageConfig.flags?.dnd5e ?? {};
     results.message.dnd5e.targets = GeneralUtil.getTargetDescriptors({ actorId: results.message.speaker.actor });
@@ -176,7 +177,7 @@ export class ActivityUtil {
       ...results.message.flags, 
       rsr5e: { processed: true }
     }
-    LogUtil.log("ddbglUse", [results.message]);
+    LogUtil.log("ddbglUse - results.message", [results.message]);
 
     // Perform any final usage steps
     await activity._finalizeUsage(usageConfig, results); 

@@ -179,59 +179,68 @@ body.crlngn-ddbgl-chat.v13 {
       border-left-width: 3px;
     }
   }
-  
-  /* DND5e */
-  /* use colors per roll type */
-  &.roll-chat-borders {
+
+  :is(.chat-popout, #chat-log, .chat-log){
     --ddb-color-custom-roll: #f5a623;
     --ddb-color-attack-roll: #1b9af0;
     --ddb-color-damage-roll: #df7b7b;
     --ddb-color-ability-roll: #b55dff;
     --ddb-color-heal-roll: #6cbf5b;
+  }
+  
+  
+  /* DND5e */
+  /* use colors per roll type */
+  &.roll-chat-borders {
 
-    &.system-dnd5e :is(.chat-popout, #chat-log) li.message:is(.roll),
-    &.system-dnd5e :is(.chat-popout, #chat-log) li.message:is(.custom) {
+    &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) li.message:is(.roll),
+    &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) li.message:is(.custom) {
       border: 1px solid var(--ddb-color-custom-roll);
     }
-    &.system-dnd5e :is(.chat-popout, #chat-log) li.message:is(.attack) {
+    &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) li.message:is(.attack) {
       border: 1px solid var(--ddb-color-attack-roll);
     }
-    &.system-dnd5e :is(.chat-popout, #chat-log) li.message:is(.damage) {
+    &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) li.message:is(.damage) {
       border: 1px solid var(--ddb-color-damage-roll);
     }
-    &.system-dnd5e :is(.chat-popout, #chat-log) li.message:is(.check),
-    &.system-dnd5e :is(.chat-popout, #chat-log) li.message:is(.skill),
-    &.system-dnd5e :is(.chat-popout, #chat-log) li.message:is(.ability),
-    &.system-dnd5e :is(.chat-popout, #chat-log) li.message:is(.tool) {
+    &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) li.message:is(.check),
+    &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) li.message:is(.skill),
+    &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) li.message:is(.ability),
+    &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) li.message:is(.tool) {
       border: 1px solid var(--ddb-color-ability-roll);
     }
-    &.system-dnd5e :is(.chat-popout, #chat-log) li.message:is(.heal), 
-    &.system-dnd5e :is(.chat-popout, #chat-log) li.message:is(.healing),
-    &.system-dnd5e :is(.chat-popout, #chat-log) li.message:is(.save) {
+    &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) li.message:is(.heal), 
+    &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) li.message:is(.healing),
+    &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) li.message:is(.save) {
       border: 1px solid var(--ddb-color-heal-roll);
     }
-    
-    /* flavor text - roll type */
-    &.system-dnd5e :is(.chat-popout, #chat-log) .chat-message.crlngn span.roll {
-      color: var(--ddb-color-custom-roll);
-    }
-    &.system-dnd5e :is(.chat-popout, #chat-log) .chat-message.crlngn span.tohit {
-      color: var(--ddb-color-attack-roll);
-    }
-    &.system-dnd5e :is(.chat-popout, #chat-log) .chat-message.crlngn span.damage {
-      color: var(--ddb-color-damage-roll);
-    }
-    &.system-dnd5e :is(.chat-popout, #chat-log) .chat-message.crlngn span.check {
-      color: var(--ddb-color-ability-roll);
-    }
-    &.system-dnd5e :is(.chat-popout, #chat-log) .chat-message.crlngn span.heal, 
-    &.system-dnd5e :is(.chat-popout, #chat-log) .chat-message.crlngn span.save {
-      color: var(--ddb-color-heal-roll);
-    }
-    &.system-dnd5e :is(.chat-popout, #chat-log) .chat-message.left-border {
+
+    &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) .chat-message.left-border {
       border-width: 0;
       border-left-width: 3px;
     }
+  }
+
+  /* flavor text - roll type */
+  &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn .flavor-text {
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn .rolltype.roll {
+    color: var(--ddb-color-custom-roll);
+  }
+  &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn .rolltype.tohit {
+    color: var(--ddb-color-attack-roll);
+  }
+  &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn .rolltype.damage {
+    color: var(--ddb-color-damage-roll);
+  }
+  &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn .rolltype.check {
+    color: var(--ddb-color-ability-roll);
+  }
+  &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn .rolltype.heal, 
+  &.system-dnd5e :is(.chat-popout, #chat-log, .chat-log) .chat-message.crlngn .rolltype.save {
+    color: var(--ddb-color-heal-roll);
   }
   
   

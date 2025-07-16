@@ -2,7 +2,8 @@
   "CRLNGN": { 
     "ui": { 
       "notifications": {
-        "settingsUpdated": "Configurações salvas."
+        "settingsUpdated": "Configurações salvas.",
+        "clickMapToPlaceTemplate": "Clique no mapa para posicionar o template e ver a rolagem. Clique com botão direito para cancelar o template"
       }
     },
     "settings": {

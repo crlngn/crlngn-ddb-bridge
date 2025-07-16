@@ -305,8 +305,6 @@ export class RollUtil{
     // }
 
     // set the template back to normal
-    // if(!isMidiOn){
-    // }
     selectedActivity.metadata.usage.chatCard = oldTemplate;
   }
 
@@ -332,42 +330,83 @@ export class RollUtil{
     workflow = isMidiOn ? selectedActivity.workflow : null;
 
     if(isMidiOn){
+      // if(!selectedActivity.attack){
+      //   LogUtil.warn("Damage only roll not implemented");
+      // }else{
+      //   if(!workflow){
+      //     LogUtil.error("Attack workflow not found for damage roll", [selectedActivity]);
+      //     return;
+      //   }
+      //   activityRolls = await selectedActivity.rollDamage({
+      //     ...config.roll,
+      //     midiOptions: {
+      //       workflowOptions: { damageRollDSN: false }
+      //     }
+      //   }, 
+      //   config.dialog, 
+      //   { 
+      //     create: false,
+      //     data: {
+      //       ...config.message 
+      //     }
+      //   });
+      //   if(activityRolls.length < 1){ return; }
+        
+      //   // copy terms from the original roll and recalculate
+      //   if(SettingsUtil.get(SETTINGS.foundryRollModifiers.tag)){
+      //     activityRolls[0] = RollUtil.replaceDie(activityRolls[0], msg.rolls[0]);
+      //   }else{
+      //     activityRolls[0] = RollUtil.replaceTerms(activityRolls[0], msg.rolls[0]);
+      //   }
+
+      //   await workflow.setDamageRoll(activityRolls[0]);
+      //   await workflow.WorkflowState_DamageRollComplete();
+      //   await workflow.setDamageRoll(activityRolls[0]);
+      // }
+
+    } else { 
+      activityRolls = [];
+
       if(!selectedActivity.attack){
-        LogUtil.warn("Damage only roll not implemented");
-      }else{
-        if(!workflow){
-          LogUtil.error("Attack workflow not found for damage roll", [selectedActivity]);
-          return;
-        }
-        activityRolls = await selectedActivity.rollDamage({
-          ...config.roll,
-          midiOptions: {
-            workflowOptions: { damageRollDSN: false }
-          }
-        }, 
-        config.dialog, 
-        { 
-          create: false,
-          data: {
-            ...config.message 
+        LogUtil.log("Damage only activity", [activityRolls, selectedActivity.metadata.usage.chatCard]);
+        
+        config.roll.subsequentActions = false;
+        usageResults = await ActivityUtil.ddbglUse(selectedActivity, config.roll, config.dialog, { 
+          create: true,
+          rollMode: msgData.rollMode,
+          data: { 
+            // rollMsg: msg.content, 
+            rolls: [],
+            user: config.message.user,
+            speaker: config.message.speaker,
+            flavor: ``,
+            flags: {
+              rsr5e: config.roll.flags.rsr5e,
+              [MODULE_SHORT]: { 
+                processed: true, 
+                data: { msg, msgData },
+                rollMode: msgData.rollMode,
+                cls: msg.flags["ddb-game-log"].cls,
+                flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
+                        `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`
+              }
+            }
           }
         });
-        if(activityRolls.length < 1){ return; }
-        
-        // copy terms from the original roll and recalculate
-        if(SettingsUtil.get(SETTINGS.foundryRollModifiers.tag)){
-          activityRolls[0] = RollUtil.replaceDie(activityRolls[0], msg.rolls[0]);
-        }else{
-          activityRolls[0] = RollUtil.replaceTerms(activityRolls[0], msg.rolls[0]);
-        }
 
-        await workflow.setDamageRoll(activityRolls[0]);
-        await workflow.WorkflowState_DamageRollComplete();
-        await workflow.setDamageRoll(activityRolls[0]);
+        // if(!usageResults){
+        //   usageResults = { message: config.message }
+        // }
+    
+        // // usageResults.message.rolls = [activityRolls[0]]; 
+        // usageResults.message.flags = usageResults.message.flags ?? {}; 
+        // usageResults.message.flags.rsr5e = {
+        //   processed: true,
+        //   quickRoll: false
+        // }
+        // usageResults.message.targets = GeneralUtil.getTargetDescriptors();
+        // usageResults.message.rollMode = msgData.rollMode;
       }
-
-    }else{ 
-      activityRolls = [];
 
       try{
         activityRolls = await selectedActivity.rollDamage({
@@ -398,17 +437,6 @@ export class RollUtil{
         }
         LogUtil.log("triggerAttack - after", [activityRolls, msg.rolls]);
         
-        if(!usageResults){
-          usageResults = { message: config.message }
-        }
-    
-        usageResults.message.rolls = activityRolls; 
-        usageResults.message.flags = usageResults.message.flags ?? {}; 
-        usageResults.message.flags.rsr5e = {
-          processed: true,
-          quickRoll: false
-        }
-        
         config.roll.flags.dnd5e.roll = { type: ROLL_TYPES.damage }; 
         config.message.flags = config.roll.flags;
         config.message.flags = {
@@ -420,44 +448,10 @@ export class RollUtil{
           rsr5e: config.roll.flags.rsr5e
         }; 
       }catch(e){
-        LogUtil.error("triggerDamage B", [e]);
+        LogUtil.error("triggerDamage ERROR", [e]);
       }
-
-      if(!selectedActivity.attack){
-        LogUtil.log("Damage only activity", [activityRolls, selectedActivity.metadata.usage.chatCard]);
-
-        config.roll.subsequentActions = false;
-        usageResults = await ActivityUtil.ddbglUse(selectedActivity, config.roll, config.dialog, { 
-          create: true,
-          rollMode: msgData.rollMode,
-          data: { 
-            // rollMsg: msg.content, 
-            rolls: activityRolls || [],
-            user: config.message.user,
-            speaker: config.message.speaker,
-            flavor: ``,
-            flags: {
-              rsr5e: config.roll.flags.rsr5e,
-              [MODULE_SHORT]: { 
-                processed: true, 
-                data: { msg, msgData },
-                rollMode: msgData.rollMode,
-                cls: msg.flags["ddb-game-log"].cls,
-                flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
-                        `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`
-              }
-            }
-          }
-        });
-
-        config.message.user.targets.forEach(token => { 
-          token.control({releaseOthers: false})
-        }); 
-        // await ChatMessage.create(usageResults.message, {rollMode: msgData.rollMode }); 
-      }else{
-        await activityRolls[0].toMessage(config.message, {rollMode: msgData.rollMode });
-      }
-      LogUtil.log("triggerDamage", [activityRolls, config.message]);
+      
+      await activityRolls[0].toMessage(config.message, {rollMode: msgData.rollMode });
 
 
       setTimeout(() => {
@@ -522,10 +516,48 @@ export class RollUtil{
    * @returns 
    */
   static triggerHeal = async(selectedActivity, msg, msgData, config) => {
+    const SETTINGS = getSettings();
     let usageResults;
     let activityRolls = [];
 
     LogUtil.log("Heal activity");
+
+    config.roll.subsequentActions = false;
+    config.roll.flags.dnd5e.roll = { type: ROLL_TYPES.damage }; 
+
+    usageResults = await ActivityUtil.ddbglUse(selectedActivity, config.roll, config.dialog, { 
+      create: true,
+      rollMode: msgData.rollMode,
+      data: { 
+        // rollMsg: msg.content, 
+        rolls: [],
+        user: config.message.user,
+        speaker: config.message.speaker,
+        flavor: ``,
+        flags: {
+          rsr5e: config.roll.flags.rsr5e,
+          [MODULE_SHORT]: { 
+            processed: true, 
+            data: { msg, msgData },
+            rollMode: msgData.rollMode,
+            cls: msg.flags["ddb-game-log"].cls,
+            flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
+                    `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`
+          }
+        }
+      }
+    })
+
+    // if(!usageResults){
+    //   usageResults = { message: config.message }
+    // }
+
+    // // usageResults.message.rolls = [activityRolls[0]]; 
+    // usageResults.message.flags = usageResults.message.flags ?? {}; 
+    // usageResults.message.flags.rsr5e = {
+    //   processed: true,
+    //   quickRoll: false
+    // }
     
     try{
       activityRolls = await selectedActivity.rollDamage({
@@ -553,20 +585,8 @@ export class RollUtil{
       }else{
         activityRolls[0] = RollUtil.replaceTerms(activityRolls[0], msg.rolls[0]);
       }
-      LogUtil.log("triggerAttack - after", [activityRolls, msg.rolls]);
+      LogUtil.log("triggerHeal - after", [activityRolls, msg.rolls]);
       
-      if(!usageResults){
-        usageResults = { message: config.message }
-      }
-  
-      usageResults.message.rolls = activityRolls; 
-      usageResults.message.flags = usageResults.message.flags ?? {}; 
-      usageResults.message.flags.rsr5e = {
-        processed: true,
-        quickRoll: false
-      }
-      
-      config.roll.flags.dnd5e.roll = { type: ROLL_TYPES.damage }; 
       config.message.flags = config.roll.flags;
       config.message.flags = {
         ...config.message,
@@ -577,74 +597,11 @@ export class RollUtil{
         rsr5e: config.roll.flags.rsr5e
       }; 
     }catch(e){
-      LogUtil.error("triggerDamage B", [e]);
+      LogUtil.error("triggerHeal ERROR", [e]);
     }
 
-    config.roll.subsequentActions = false;
-    usageResults = await ActivityUtil.ddbglUse(selectedActivity, config.roll, config.dialog, { 
-      create: true,
-      rollMode: msgData.rollMode,
-      data: { 
-        // rollMsg: msg.content, 
-        rolls: activityRolls || [],
-        user: config.message.user,
-        speaker: config.message.speaker,
-        flavor: ``,
-        flags: {
-          rsr5e: config.roll.flags.rsr5e,
-          [MODULE_SHORT]: { 
-            processed: true, 
-            data: { msg, msgData },
-            rollMode: msgData.rollMode,
-            cls: msg.flags["ddb-game-log"].cls,
-            flavor: `<span class="crlngn item-name">${selectedActivity.item.name}:</span> ` +
-                    `<span class="crlngn ${msg.flags["ddb-game-log"].cls.replace(" ", "")}">${msg.flags["ddb-game-log"].cls}</span>`
-          }
-        }
-      }
-    })
-    // await ChatMessage.create(usageResults.message, {rollMode: msgData.rollMode }); 
-    
-    // usageResults = await ActivityUtil.ddbglUse(selectedActivity, config.roll, config.dialog, { 
-    //   create: false,
-    //   data: {
-    //     ...config.message,
-    //     // flags: {
-    //     //   ...config.message.flags,
-    //     //   dnd5e: {
-    //     //     targets: GeneralUtil.getTargetDescriptors(),
-    //     //     messageType: "usage",
-    //     //     roll: { type: ROLL_TYPES.healing }
-    //     //   },
-    //     //   [MODULE_SHORT]: {
-    //     //     ...config.message.flags?.[MODULE_SHORT],
-    //     //     originalFlavor: config.message.flavor // Store original flavor in case needed
-    //     //   }
-    //     // }
-    //   }
-    // })
-    // LogUtil.log("triggerHeal", [usageResults]);
-    
-    // if (usageResults?.message) {
-    //   const chatCard = await ChatMessage.implementation.create(usageResults.message, {
-    //     rollMode: msgData.rollMode,
-    //     flags: {
-    //       ...config.message.flags,
-    //       dnd5e: {
-    //         targets: GeneralUtil.getTargetDescriptors(),
-    //         messageType: "usage",
-    //         roll: { type: ROLL_TYPES.healing }
-    //       },
-    //       [MODULE_SHORT]: {
-    //         ...config.message.flags?.[MODULE_SHORT],
-    //         originalFlavor: config.message.flavor // Store original flavor in case needed
-    //       }
-    //     }
-    //   });
-    //   LogUtil.log("triggerHeal", [chatCard]);
-    // } else {
-    //   LogUtil.warn("triggerHeal: No message returned from activity usage", [selectedActivity, usageResults]);
-    // } 
+    await activityRolls[0].toMessage(config.message, {rollMode: msgData.rollMode });
+
   }
 
   /**

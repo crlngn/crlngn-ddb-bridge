@@ -2,7 +2,8 @@
   "CRLNGN": { 
     "ui": { 
       "notifications": {
-        "settingsUpdated": "Settings updated"
+        "settingsUpdated": "Settings updated",
+        "clickMapToPlaceTemplate": "Click the map to place the template and see the roll. Right click to cancel template placement"
       }
     },
     "settings": {
