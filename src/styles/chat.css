@@ -2,63 +2,78 @@
 Chat card layout - start 
 ******************/
 body.crlngn-ddbgl-chat.v13 {
-  /* variables for the custom dnd5e card buttons */
-  --crlngn-i18n-attack: "attack";
-  --crlngn-i18n-healing: "healing";
-  --crlngn-i18n-damage: "damage";
-  --crlngn-i18n-template: "template";
-  --crlngn-i18n-consume: "consume";
-  --crlngn-i18n-summons: "summons";
-  --crlngn-i18n-refund: "refund";
-  --crlngn-i18n-macro: "macro";
-  --crlngn-i18n-save-dc: " save DC ";
-  --crlngn-i18n-save: " save ";
-  --crlngn-font-family: var(--font-body);
-  --crlngn-font-titles: var(--dnd5e-font-roboto-slab);
 
-  --dnd5e-color-parchment: rgb(40, 47, 54);
-  --dnd5e-background-card: rgb(40, 47, 54); 
-  --card-color-bg: var(--chat-dark-blue);
-  --dnd5e-color-success-background: rgba(98, 184, 117, 0.35);
-  --dnd5e-color-failure-background: rgba(209, 67, 67, 0.35);
-  --dnd5e-text-color-success: #c1e6a7;
-  --dnd5e-text-color-failure: #d8aeae;
-  --dnd5e-color-crimson: var(--color-highlights);
+  :is(.chat-popout, #chat-log, .chat-log){
+    /* variables for the custom dnd5e card buttons */
+    --crlngn-i18n-attack: "attack";
+    --crlngn-i18n-healing: "healing";
+    --crlngn-i18n-damage: "damage";
+    --crlngn-i18n-template: "template";
+    --crlngn-i18n-consume: "consume";
+    --crlngn-i18n-summons: "summons";
+    --crlngn-i18n-refund: "refund";
+    --crlngn-i18n-macro: "macro";
+    --crlngn-i18n-save-dc: " save DC ";
+    --crlngn-i18n-save: " save ";
+    --crlngn-font-family: var(--font-body);
+    --crlngn-font-titles: var(--dnd5e-font-roboto-slab);
+
+    --dnd5e-color-crimson: var(--color-highlights);
+  }
+    
+
 
   &.theme-dark{
-    --chat-button-bg: rgba(40, 47, 54, 1);
-    --chat-button-bg-10: rgba(40, 47, 54, 0.10);
-    --chat-button-bg-15: rgba(40, 47, 54, 0.15);
-    --chat-button-bg-25: rgba(40, 47, 54, 0.25);
-    --chat-button-bg-50: rgba(40, 47, 54, 0.5);
-    --chat-button-bg-75: rgba(40, 47, 54, 0.75);
-    --chat-dark-blue: rgba(24, 32, 38, 1);
-    --chat-dark-blue-b: rgb(29, 36, 48, 1); 
-    --chat-dark-bg: rgba(40, 47, 54, 1); 
-    --chat-dark-bg-15: rgba(40, 47, 54, 0.15);
-    --chat-dark-bg-25: rgba(40, 47, 54, 0.25);
-    --chat-dark-bg-50: rgba(40, 47, 54, 0.50); 
-    --chat-dark-bg-75: rgba(40, 47, 54, 0.75); 
-    --chat-dark-bg-90: rgba(40, 47, 54, 0.90); 
-    --color-dark-bg-10: rgba(40, 47, 54, 0.10);
+    :is(.chat-popout, #chat-log, .chat-log){
+      --chat-button-bg: rgba(40, 47, 54, 1);
+      --chat-button-bg-10: rgba(40, 47, 54, 0.10);
+      --chat-button-bg-15: rgba(40, 47, 54, 0.15);
+      --chat-button-bg-25: rgba(40, 47, 54, 0.25);
+      --chat-button-bg-50: rgba(40, 47, 54, 0.5);
+      --chat-button-bg-75: rgba(40, 47, 54, 0.75);
+      --chat-dark-blue: rgba(24, 32, 38, 1);
+      --chat-dark-blue-b: rgb(29, 36, 48, 1); 
+      --chat-dark-bg: rgba(40, 47, 54, 1); 
+      --chat-dark-bg-15: rgba(40, 47, 54, 0.15);
+      --chat-dark-bg-25: rgba(40, 47, 54, 0.25);
+      --chat-dark-bg-50: rgba(40, 47, 54, 0.50); 
+      --chat-dark-bg-75: rgba(40, 47, 54, 0.75); 
+      --chat-dark-bg-90: rgba(40, 47, 54, 0.90); 
+      --color-dark-bg-10: rgba(40, 47, 54, 0.10);
+
+      --dnd5e-color-parchment: rgb(40, 47, 54);
+      --dnd5e-background-card: rgb(40, 47, 54); 
+
+      --card-color-bg: var(--chat-dark-blue);
+
+      --dnd5e-color-success-background: rgba(98, 184, 117, 0.35);
+      --dnd5e-color-failure-background: rgba(209, 67, 67, 0.35);
+      --dnd5e-text-color-success: #c1e6a7;
+      --dnd5e-text-color-failure: #d8aeae;
+    }
   }
 
   &.theme-light{
-    --chat-button-bg: rgb(234, 229, 228);
-    --chat-button-bg-10: rgba(234, 229, 228, 0.10);
-    --chat-button-bg-15: rgba(234, 229, 228, 0.15);
-    --chat-button-bg-25: rgba(234, 229, 228, 0.25);
-    --chat-button-bg-50: rgba(234, 229, 228, 0.5);
-    --chat-button-bg-75: rgba(234, 229, 228, 0.75);
-    --chat-dark-blue: rgba(24, 32, 38, 1);
-    --chat-dark-blue-b: rgb(29, 36, 48, 1); 
-    --chat-dark-bg: rgba(234, 229, 228, 1); 
-    --chat-dark-bg-15: rgba(234, 229, 228, 0.15);
-    --chat-dark-bg-25: rgba(234, 229, 228, 0.25);
-    --chat-dark-bg-50: rgba(234, 229, 228, 0.50); 
-    --chat-dark-bg-75: rgba(234, 229, 228, 0.75); 
-    --chat-dark-bg-90: rgba(234, 229, 228, 0.90); 
-    --color-dark-bg-10: rgba(234, 229, 228, 0.10);
+    :is(.chat-popout, #chat-log, .chat-log){
+      --chat-button-bg: rgb(234, 229, 228);
+      --chat-button-bg-10: rgba(234, 229, 228, 0.10);
+      --chat-button-bg-15: rgba(234, 229, 228, 0.15);
+      --chat-button-bg-25: rgba(234, 229, 228, 0.25);
+      --chat-button-bg-50: rgba(234, 229, 228, 0.5);
+      --chat-button-bg-75: rgba(234, 229, 228, 0.75);
+      --chat-dark-blue: rgba(24, 32, 38, 1);
+      --chat-dark-blue-b: rgb(29, 36, 48, 1); 
+      --chat-dark-bg: rgba(234, 229, 228, 1); 
+      --chat-dark-bg-15: rgba(234, 229, 228, 0.15);
+      --chat-dark-bg-25: rgba(234, 229, 228, 0.25);
+      --chat-dark-bg-50: rgba(234, 229, 228, 0.50); 
+      --chat-dark-bg-75: rgba(234, 229, 228, 0.75); 
+      --chat-dark-bg-90: rgba(234, 229, 228, 0.90); 
+      --color-dark-bg-10: rgba(234, 229, 228, 0.10);
+
+      --dnd5e-color-parchment: rgb(234, 229, 228);
+      --dnd5e-background-card: rgb(234, 229, 228); 
+    }
   }
 
   .chat-sidebar {
