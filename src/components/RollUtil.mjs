@@ -126,7 +126,7 @@ export class RollUtil{
     // config specific to attack rolls
     const targets = GeneralUtil.getTargetDescriptors({user: game.user});
     config.roll.target = targets.length === 1 ? targets[0].ac : undefined;
-    config.roll.flags.rsr5e = { processed: true  };
+    config.roll.flags.rsr5e = { processed: true };
     // config.roll.flags.dnd5e.targets = targets;
     config.roll.flags.dnd5e.roll = { type: ROLL_TYPES.attack }; 
 

@@ -27,7 +27,9 @@ body.crlngn-ddbgl-chat {
   --color-light-bg-85: rgba(233, 233, 226, 0.85);
   --color-light-bg-90: rgba(233, 233, 226, 0.9);
   --color-light-bg: rgba(233, 233, 226, 1);
- 
+
+  --color-secondary-50: rgba(235, 235, 215, 0.5);
+  --color-secondary-b-50: rgba(235, 235, 215, 0.5);
 
   &.theme-dark, &[data-ddb-custom-style=dark]{
     .sidebar-tab{

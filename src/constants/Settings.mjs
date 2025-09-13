@@ -79,8 +79,8 @@ export function getSettings() {
         2: game.i18n.localize("CRLNGN.settings.templateAutoTarget.choices.notFriendly.label"),
         3: game.i18n.localize("CRLNGN.settings.templateAutoTarget.choices.none.label"),
       },
-      inputType: SETTING_INPUT.checkbox,
-      default: true,
+      inputType: SETTING_INPUT.select,
+      default: 1,
       scope: SETTING_SCOPE.world,
       config: true
     },

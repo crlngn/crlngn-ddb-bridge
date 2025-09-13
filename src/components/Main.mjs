@@ -25,10 +25,7 @@ export class Main {
   static addCSSLocalization(){
     const locBtnPath = 'CRLNGN.dnd5e.chatCard.buttons';
 
-    LogUtil.log('Test', [game.i18n.translations, game.i18n.translations['CRLNGN']]);
-    LogUtil.log(`Full path being requested: ${locBtnPath}.attack`); 
     if (game.i18n.has(`${locBtnPath}.attack`)) {
-      // Key exists and should work
       LogUtil.warn(`Key exists`);
     } else {
       LogUtil.warn(`Missing translation key: ${locBtnPath}.attack`);
@@ -53,7 +50,7 @@ export class Main {
     Hooks.once(HOOKS_CORE.INIT,()=>{
       Main.isMidiOn = GeneralUtil.isModuleOn("midi-qol");
       LogUtil.log("Initiating module", [], true);
-      document.querySelector("body").classList.add("crlngn-ddbgl-chat"); //add here for better rendering, remove later if needed
+      document.querySelector("body").classList.add("crlngn-ddbgl-chat");
       
       SettingsUtil.registerSettings();
       Main.registerActivityHooks();
@@ -127,7 +124,6 @@ export class Main {
   }
 
   static setupKeyListeners(){
-    // Listen to keydown event and store keys
     window.addEventListener('keydown', (event) => {
       const keyPressed = event.key;
       const index = Main.keysPressed.indexOf(keyPressed);
@@ -135,10 +131,8 @@ export class Main {
       if(index < 0){
         Main.keysPressed.push(keyPressed);
       }
-      // LogUtil.log("Keydown", [Main.keysPressed]);
     });
 
-    // Listen to keyup event and remove keys
     window.addEventListener('keyup', (event) => {
       const keyReleased = event.key;
       const index = Main.keysPressed.indexOf(keyReleased);
@@ -146,7 +140,6 @@ export class Main {
       if(index >= 0){
         Main.keysPressed.splice(index,1);
       }
-      // LogUtil.log("Keyup", [Main.keysPressed]); 
     });
   }
 
@@ -245,9 +238,6 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
         
         const user = GeneralUtil.getUserFromActor(msg.speaker?.actor);
         const playerMakesRoll = SettingsUtil.get(SETTINGS.ddbRollOwnership.tag) == 2;
-        // destructure the roll before sending via socket
-        // msgConfig = JSON.stringify(msgConfig);
-        // msg.rolls = msg.rolls.map(roll => roll.toJSON());
 
         LogUtil.log("Main - onPreCreateChatMessage", [msg, user, playerMakesRoll]);
 
@@ -257,7 +247,6 @@ const onPreCreateChatMessage = (chatMessage, msgConfig, options, userId) => {
           const serializedMsg = SocketUtil.serializeForTransport(msg);
           LogUtil.log("Main - After serialization", [serializedMsg]);
           LogUtil.log("CHECK ROLL", [playerMakesRoll, user, serializedMsg, msgConfig]);
-          // SocketUtil.execForUser('DDBRoll', user.id, ddbglCls, itemId, actionName, msg, msgConfig); 
           SocketUtil.execForUser('DDBRoll', user.id, ddbglCls, itemId, actionName, serializedMsg, msgConfig); 
         }else{
           LogUtil.log("Main - No serialization", [msg]);
@@ -292,7 +281,6 @@ const onRenderChatMessage = (chatMessage, html) => {
 const onPreRoll = (rollConfig, dialogConfig, messageConfig) => {
   LogUtil.log(HOOKS_DND5E.PRE_ROLL_V2, [rollConfig, dialogConfig, messageConfig]);
 
-  // dialogConfig.configure = false;
   dialogConfig.configure = RollUtil.getDialogSetting(dialogConfig.configure, rollConfig);
   LogUtil.log("dialog configure", [dialogConfig.configure]);
 
@@ -357,7 +345,6 @@ const onRollAttack = async(rolls, data, c, d) => {
   const isMidiOn = GeneralUtil.isModuleOn('midi-qol');
   if(isMidiOn){
     LogUtil.log(HOOKS_DND5E.ROLL_ATTACK_V2, [MidiQOL.getWorkflow]);
-    // RollUtil.replaceDie(rolls[0], )
   }
 }
 
@@ -365,19 +352,13 @@ const onRollAttack = async(rolls, data, c, d) => {
  * TEMPLATES
  */
 const onRefreshTemplate = (template, options) => {
-  // LogUtil.log(HOOKS_CORE.REFRESH_MEASURED_TEMPLATE, [template, options]);
-
   if(!template.isOwner){ return; }
-
-  // Throttle the template refresh to prevent excessive targeting updates
   const throttleKey = `refresh-template-${template.id}`;
   
-  // Clear any existing timeout for this template to prevent overlapping executions
   if (Main.throttleTimers[throttleKey]) {
     clearTimeout(Main.throttleTimers[throttleKey]);
   }
 
-  // Set a new timeout to execute the targeting logic after a delay
   Main.throttleTimers[throttleKey] = setTimeout(() => {
     let maxDisposition = 3;
 
@@ -390,10 +371,8 @@ const onRefreshTemplate = (template, options) => {
         return;
     }
 
-    // First, release all existing targets to ensure clean state
     game.user.targets.forEach(t => t.setTarget(false, { releaseOthers: false }));
     
-    // Then collect tokens that should be targeted
     const tokensToTarget = [];
     for(let token of canvas.tokens.placeables){
       if(token.document.disposition <= maxDisposition && template.shape.contains(token.center.x-template.x,token.center.y-template.y)){
@@ -401,7 +380,6 @@ const onRefreshTemplate = (template, options) => {
       }
     }
     
-    // Set all new targets with groupSelection for better synchronization
     tokensToTarget.forEach((token, i) => {
       token.setTarget(true, { 
         releaseOthers: i === 0,  // Only release others on first token
@@ -409,12 +387,10 @@ const onRefreshTemplate = (template, options) => {
       });
     });
     
-    // Broadcast the targeting update if any tokens were targeted
     if (tokensToTarget.length > 0) {
       game.user.broadcastActivity({ targets: game.user.targets.ids });
     }
     
-    // Clean up the timer reference
     delete Main.throttleTimers[throttleKey];
-  }, 50); // Slightly longer throttle for better stability
+  }, 50);
 }

@@ -1,4 +1,4 @@
-**Latest Version:** 3.0.2
+**Latest Version:** 3.0.4
 
 **Requirements:** 
 - v2.x: Foundry VTT version 12.328+ / DnD5e version 4.x
